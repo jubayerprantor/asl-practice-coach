@@ -83,6 +83,29 @@ export const tokens = {
       fontSize: '15px',
       fontWeight: 600,
     },
+    titleLarge: {
+      fontSize: '28px',
+      fontWeight: 700,
+      lineHeight: 1.25,
+      letterSpacing: '-0.02em',
+    },
+    titleMedium: {
+      fontSize: '24px',
+      fontWeight: 700,
+      lineHeight: 1.3,
+      letterSpacing: '-0.01em',
+    },
+    figureLarge: {
+      fontSize: '32px',
+      fontWeight: 700,
+      lineHeight: 1.2,
+      letterSpacing: '-0.02em',
+    },
+    letterMedium: {
+      fontSize: '24px',
+      fontWeight: 700,
+      lineHeight: 1,
+    },
   },
 
   shape: {
@@ -103,6 +126,10 @@ export const tokens = {
     holdDotSize: '26px',
     fingerRowHeight: '44px',
     holdMeterHeight: '8px',
+    mobileTouchTarget: '44px',
+    maxWidthSetup: '560px',
+    maxWidthHome: '720px',
+    maxWidthProgress: '880px',
   },
 
   spacing: {

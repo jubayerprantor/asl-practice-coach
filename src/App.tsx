@@ -6,8 +6,12 @@ import {
 } from './packs/packRegistry';
 import { tokens } from './ui/tokens';
 import { AppHeader, type AppMode } from './ui/AppHeader';
+import { MobileBottomNav } from './ui/MobileBottomNav';
 import { CameraPanel } from './ui/CameraPanel';
 import { CoachPanel } from './ui/CoachPanel';
+import { CameraSetupCard } from './ui/CameraSetupCard';
+import { HomePicker } from './ui/HomePicker';
+import { ProgressScreen } from './ui/ProgressScreen';
 import { DebouncedSpeechCoach } from './ui/speechCoach';
 import { logPracticeAttempt } from './storage/db';
 import type { EvaluationResult, FingerName } from './engine';
@@ -25,8 +29,33 @@ export default function App() {
     [loadedPack]
   );
 
-  // App mode: Learn by default
-  const [mode, setMode] = useState<AppMode>('learn');
+  // Responsive mobile layout detection
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Section 11: Setup & Permission states
+  const [hasCompletedSetup, setHasCompletedSetup] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('asl_camera_setup_done') === '1';
+  });
+  const [isCameraBlocked, setIsCameraBlocked] = useState<boolean>(false);
+
+  // App mode: Section 12 specifies Home is shown on first launch after setup, and when wordmark is clicked.
+  const [mode, setMode] = useState<AppMode>(() => {
+    if (typeof window === 'undefined') return 'learn';
+    const setupDone = window.localStorage.getItem('asl_camera_setup_done') === '1';
+    return setupDone ? 'home' : 'learn';
+  });
 
   // Controls: Voice is optional and off by default
   const [voiceEnabled, setVoiceEnabled] = useState<boolean>(false);
@@ -41,15 +70,21 @@ export default function App() {
     () => loadedPack.curriculum.lessons ?? [],
     [loadedPack]
   );
-  const currentLessonIdx = 0;
+  const [currentLessonIdx, setCurrentLessonIdx] = useState<number>(0);
   const currentLesson = lessons[currentLessonIdx] ?? lessons[0];
-  const requiredHolds = currentLesson?.requiredSuccessfulHolds ?? 2;
+  const requiredHolds = currentLesson?.requiredSuccessfulHolds ?? 3;
 
   const [lessonSignIdx, setLessonSignIdx] = useState<number>(0);
   const [completedHolds, setCompletedHolds] = useState<number>(0);
   const [completedSignsInLesson, setCompletedSignsInLesson] = useState<
     Set<string>
   >(new Set());
+
+  // Section 9: Lesson complete state
+  const [isLessonComplete, setIsLessonComplete] = useState<boolean>(false);
+  const [mostAdjustedFinger, setMostAdjustedFinger] = useState<string | null>(
+    null
+  );
 
   // Check Mode State
   const availableSigns = useMemo(
@@ -65,6 +100,22 @@ export default function App() {
     }
     return availableSigns[checkSignIdx] ?? 'A';
   }, [mode, currentLesson, lessonSignIdx, availableSigns, checkSignIdx]);
+
+  // Next sign in current lesson or next lesson
+  const nextSign = useMemo(() => {
+    if (!currentLesson) return null;
+    if (lessonSignIdx + 1 < currentLesson.signs.length) {
+      return currentLesson.signs[lessonSignIdx + 1];
+    }
+    if (currentLessonIdx + 1 < lessons.length) {
+      return lessons[currentLessonIdx + 1].signs[0];
+    }
+    return null;
+  }, [currentLesson, lessonSignIdx, currentLessonIdx, lessons]);
+
+  const isLastLesson =
+    currentLessonIdx === lessons.length - 1 &&
+    lessonSignIdx === (currentLesson?.signs.length ?? 0) - 1;
 
   // Reference entry for target sign
   const referenceEntry = useMemo(
@@ -87,7 +138,7 @@ export default function App() {
 
   // Voice & Screen reader updates based on evaluation changes
   useEffect(() => {
-    if (!evaluation) return;
+    if (!evaluation || !cameraEnabled) return;
 
     let announce = '';
     if (evaluation.status === 'unable_to_evaluate') {
@@ -106,11 +157,11 @@ export default function App() {
     if (voiceEnabled && announce) {
       speechCoachRef.current.speak(announce, true);
     }
-  }, [evaluation, voiceEnabled, loadedPack]);
+  }, [evaluation, cameraEnabled, voiceEnabled, loadedPack]);
 
-  // Handle hold completion and quiet 500ms advance
+  // Handle hold completion and Section 9 Lesson Complete flow
   useEffect(() => {
-    if (!evaluation) return;
+    if (!evaluation || !cameraEnabled || isLessonComplete) return;
 
     if (evaluation.status === 'needs_correction' && evaluation.topIssue) {
       const finger = evaluation.topIssue.finger;
@@ -130,6 +181,12 @@ export default function App() {
           topFailingFinger = f as FingerName;
         }
       }
+
+      const fingerLabel =
+        topFailingFinger === 'pinky'
+          ? 'little'
+          : topFailingFinger;
+      setMostAdjustedFinger(fingerLabel);
 
       // Log attempt to IndexedDB
       const durationMs = Math.round(
@@ -152,24 +209,10 @@ export default function App() {
         setCompletedHolds(nextHolds);
 
         if (nextHolds >= requiredHolds) {
-          // Sign completed: quiet 500ms pause, then advance to next sign
-          const timer = setTimeout(() => {
-            setCompletedSignsInLesson((prev) =>
-              new Set(prev).add(currentTargetSign)
-            );
-            setCompletedHolds(0);
-            holdAlreadyHandledRef.current = false;
-            attemptStartTimeRef.current = performance.now();
-            fingerMistakesRef.current = {};
-
-            if (lessonSignIdx + 1 < (currentLesson?.signs.length ?? 0)) {
-              setLessonSignIdx((prev) => prev + 1);
-            }
-          }, 500);
-
-          return () => clearTimeout(timer);
+          // Section 9: Enter Lesson complete view!
+          setIsLessonComplete(true);
         } else {
-          // Release gate before accepting next hold
+          // Brief pause before accepting next hold
           const timer = setTimeout(() => {
             holdAlreadyHandledRef.current = false;
           }, 400);
@@ -189,20 +232,60 @@ export default function App() {
     }
   }, [
     evaluation,
+    cameraEnabled,
+    isLessonComplete,
     mode,
     completedHolds,
     requiredHolds,
     currentTargetSign,
-    currentLesson,
-    lessonSignIdx,
     availableSigns,
     loadedPack,
   ]);
 
+  // Section 9 actions: Continue to next sign / practice again
+  const handleContinueLesson = useCallback(() => {
+    if (isLastLesson && !nextSign) {
+      setMode('check');
+      setIsLessonComplete(false);
+      setCompletedHolds(0);
+      return;
+    }
+
+    setCompletedSignsInLesson((prev) => new Set(prev).add(currentTargetSign));
+    setIsLessonComplete(false);
+    setCompletedHolds(0);
+    holdAlreadyHandledRef.current = false;
+    attemptStartTimeRef.current = performance.now();
+    fingerMistakesRef.current = {};
+
+    if (currentLesson && lessonSignIdx + 1 < currentLesson.signs.length) {
+      setLessonSignIdx((prev) => prev + 1);
+    } else if (currentLessonIdx + 1 < lessons.length) {
+      setCurrentLessonIdx((prev) => prev + 1);
+      setLessonSignIdx(0);
+      setCompletedSignsInLesson(new Set());
+    }
+  }, [
+    isLastLesson,
+    nextSign,
+    currentTargetSign,
+    currentLesson,
+    lessonSignIdx,
+    currentLessonIdx,
+    lessons.length,
+  ]);
+
+  const handlePracticeAgain = useCallback(() => {
+    setIsLessonComplete(false);
+    setCompletedHolds(0);
+    holdAlreadyHandledRef.current = false;
+    attemptStartTimeRef.current = performance.now();
+    fingerMistakesRef.current = {};
+  }, []);
+
   // Keyboard shortcuts (Rule 6)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if focus is in an input or editable field
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -251,12 +334,19 @@ export default function App() {
       if (completedSignsInLesson.has(sign)) {
         return { sign, state: 'done' as const };
       }
+      if (isLessonComplete && idx === lessonSignIdx + 1) {
+        // Section 9: "the next letter is an ink-outlined chip (not locked, not filled)"
+        return { sign, state: 'unlocked_next' as const };
+      }
       if (idx === lessonSignIdx) {
-        return { sign, state: 'current' as const };
+        return {
+          sign,
+          state: isLessonComplete ? ('done' as const) : ('current' as const),
+        };
       }
       return { sign, state: 'locked' as const };
     });
-  }, [currentLesson, completedSignsInLesson, lessonSignIdx]);
+  }, [currentLesson, completedSignsInLesson, lessonSignIdx, isLessonComplete]);
 
   const handleSelectLessonSign = useCallback((sign: string) => {
     if (!currentLesson) return;
@@ -264,11 +354,28 @@ export default function App() {
     if (idx !== -1) {
       setLessonSignIdx(idx);
       setCompletedHolds(0);
+      setIsLessonComplete(false);
       holdAlreadyHandledRef.current = false;
       attemptStartTimeRef.current = performance.now();
       fingerMistakesRef.current = {};
     }
   }, [currentLesson]);
+
+  const handleStartSetup = () => {
+    setHasCompletedSetup(true);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('asl_camera_setup_done', '1');
+    }
+    setMode('home');
+  };
+
+  const handleOpenCheckOnSign = (sign: string) => {
+    const idx = availableSigns.indexOf(sign);
+    if (idx !== -1) {
+      setCheckSignIdx(idx);
+    }
+    setMode('check');
+  };
 
   return (
     <div
@@ -308,6 +415,8 @@ export default function App() {
         onToggleVoice={() => setVoiceEnabled((v) => !v)}
         cameraEnabled={cameraEnabled}
         onToggleCamera={() => setCameraEnabled((c) => !c)}
+        onWordmarkClick={() => setMode('home')}
+        isMobile={isMobile}
       />
 
       {/* Main Content Area */}
@@ -316,84 +425,68 @@ export default function App() {
           maxWidth: '1440px',
           width: '100%',
           margin: '0 auto',
-          padding: tokens.spacing.pagePadding,
+          padding: isMobile ? '16px' : tokens.spacing.pagePadding,
+          paddingBottom: isMobile ? '80px' : tokens.spacing.pagePadding,
           boxSizing: 'border-box',
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        {mode === 'progress' ? (
-          /* Rule 7: Screens not yet designed (do NOT build without asking): Progress screen */
-          <div
-            style={{
-              backgroundColor: tokens.colors.surface,
-              borderRadius: tokens.shape.radiusCard,
-              border: `${tokens.shape.borderWidth} solid ${tokens.colors.border}`,
-              padding: '40px',
-              maxWidth: '640px',
-              margin: '60px auto',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '18px',
-                fontWeight: 700,
-                color: tokens.colors.ink,
-              }}
-            >
-              Progress Screen
-            </div>
-            <p
-              style={{
-                ...tokens.typography.body,
-                color: tokens.colors.mutedText,
-                margin: 0,
-              }}
-            >
-              Metrics measure alignment against geometric checks, not fluency.
-              This screen is pending design specification. Switch to Check or
-              Learn mode to practice.
-            </p>
-            <button
-              type="button"
-              onClick={() => setMode('learn')}
-              style={{
-                height: tokens.shape.buttonHeight,
-                padding: '0 20px',
-                borderRadius: tokens.shape.radiusControl,
-                border: `${tokens.shape.borderWidth} solid ${tokens.colors.borderStrong}`,
-                backgroundColor: tokens.colors.ink,
-                color: '#FFFFFF',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-                marginTop: '8px',
-              }}
-            >
-              Back to Learn
-            </button>
-          </div>
+        {/* Section 11: Camera Setup Card (first run) */}
+        {!hasCompletedSetup ? (
+          <CameraSetupCard
+            isBlocked={isCameraBlocked}
+            onStart={handleStartSetup}
+            onRetryPermission={() => setIsCameraBlocked(false)}
+          />
+        ) : isCameraBlocked ? (
+          /* Section 11: Permission Denied card */
+          <CameraSetupCard
+            isBlocked={true}
+            onStart={handleStartSetup}
+            onRetryPermission={() => setIsCameraBlocked(false)}
+          />
+        ) : mode === 'home' ? (
+          /* Section 12: Home / Mode Picker */
+          <HomePicker
+            onSelectLearn={() => setMode('learn')}
+            onSelectCheck={() => setMode('check')}
+            inProgressLesson={
+              currentLesson
+                ? {
+                    lessonNumber: currentLessonIdx + 1,
+                    totalLessons: lessons.length,
+                    sign: currentTargetSign,
+                  }
+                : null
+            }
+            onContinueInProgress={() => setMode('learn')}
+          />
+        ) : mode === 'progress' ? (
+          /* Section 10: Progress Screen */
+          <ProgressScreen
+            curriculumPack={loadedPack.curriculum}
+            onStartLearn={() => setMode('learn')}
+            onPracticeSign={handleOpenCheckOnSign}
+          />
         ) : (
-          /* Check & Learn modes: Two column layout */
+          /* Check & Learn modes: Desktop two-column, Mobile single-column stacked */
           <div
             style={{
               display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
               gap: tokens.spacing.gridGap,
-              minHeight: '700px',
+              minHeight: isMobile ? undefined : '700px',
               flex: 1,
             }}
           >
-            {/* Left Column: CameraPanel */}
+            {/* Left Column / Mobile Top: CameraPanel */}
             <div
               style={{
-                flex: 1,
-                minHeight: '700px',
+                flex: isMobile ? undefined : 1,
+                minHeight: isMobile ? undefined : '700px',
+                width: '100%',
                 display: 'flex',
               }}
             >
@@ -403,12 +496,14 @@ export default function App() {
                 pack={signPackBundle}
                 referenceEntry={referenceEntry}
                 showReferenceInset={mode === 'learn' && showReference}
+                isLessonComplete={isLessonComplete}
+                isMobile={isMobile}
                 onEvaluationChange={setEvaluation}
                 onToggleCamera={() => setCameraEnabled(true)}
               />
             </div>
 
-            {/* Right Column: CoachPanel */}
+            {/* Right Column / Mobile Bottom: CoachPanel */}
             <CoachPanel
               mode={mode}
               targetSign={currentTargetSign}
@@ -416,28 +511,44 @@ export default function App() {
               onToggleReference={() => setShowReference((r) => !r)}
               evaluation={evaluation}
               feedbackPack={loadedPack.feedback}
+              referenceEntry={referenceEntry}
+              cameraEnabled={cameraEnabled}
+              isMobile={isMobile}
               currentLessonNumber={currentLessonIdx + 1}
               totalLessons={lessons.length}
               lessonSigns={lessonSigns}
               onSelectSign={handleSelectLessonSign}
               completedHolds={completedHolds}
               requiredHolds={requiredHolds}
+              isLessonComplete={isLessonComplete}
+              nextSign={nextSign}
+              isLastLesson={isLastLesson}
+              mostAdjustedFinger={mostAdjustedFinger}
+              onContinueLesson={handleContinueLesson}
+              onPracticeAgain={handlePracticeAgain}
             />
           </div>
         )}
       </main>
 
-      {/* Footer */}
-      <footer
-        style={{
-          textAlign: 'center',
-          padding: '24px 0',
-          fontSize: '13px',
-          color: tokens.colors.mutedText,
-        }}
-      >
-        Video is processed on this device and never uploaded.
-      </footer>
+      {/* Footer (Desktop only or non-mobile view) */}
+      {!isMobile && (
+        <footer
+          style={{
+            textAlign: 'center',
+            padding: '24px 0',
+            fontSize: '13px',
+            color: tokens.colors.mutedText,
+          }}
+        >
+          Video is processed on this device and never uploaded.
+        </footer>
+      )}
+
+      {/* Section 13: Mobile Bottom Bar Navigation */}
+      {isMobile && hasCompletedSetup && !isCameraBlocked && (
+        <MobileBottomNav mode={mode} onModeChange={(next) => setMode(next)} />
+      )}
     </div>
   );
 }

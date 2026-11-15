@@ -3,12 +3,13 @@ import type { HoldTimerSnapshot } from '../engine/evaluateTypes';
 
 interface HoldMeterProps {
   hold: HoldTimerSnapshot | null;
+  cameraEnabled?: boolean;
 }
 
-export function HoldMeter({ hold }: HoldMeterProps) {
-  const isHolding = hold?.isHolding ?? false;
-  const progress = hold?.progress ?? 0;
-  const heldMs = hold?.heldMs ?? 0;
+export function HoldMeter({ hold, cameraEnabled = true }: HoldMeterProps) {
+  const isHolding = cameraEnabled ? (hold?.isHolding ?? false) : false;
+  const progress = cameraEnabled ? (hold?.progress ?? 0) : 0;
+  const heldMs = cameraEnabled ? (hold?.heldMs ?? 0) : 0;
   const requiredMs = hold?.requiredHoldMs ?? 1200;
 
   const valueText = isHolding

@@ -3,7 +3,7 @@ import { CheckIcon, LockIcon } from './icons';
 
 export interface LessonSignStatus {
   sign: string;
-  state: 'done' | 'current' | 'locked';
+  state: 'done' | 'current' | 'locked' | 'unlocked_next';
 }
 
 interface LessonPathProps {
@@ -49,6 +49,7 @@ export function LessonPath({
           const isDone = state === 'done';
           const isCurrent = state === 'current';
           const isLocked = state === 'locked';
+          const isUnlockedNext = state === 'unlocked_next';
 
           return (
             <button
@@ -77,7 +78,9 @@ export function LessonPath({
                   : isLocked
                   ? tokens.colors.mutedText
                   : tokens.colors.ink,
-                border: isLocked
+                border: isUnlockedNext
+                  ? `1.5px solid ${tokens.colors.ink}`
+                  : isLocked
                   ? `1px dashed ${tokens.colors.lockedOutline}`
                   : isDone
                   ? `1px solid ${tokens.colors.border}`

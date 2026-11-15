@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { tokens } from './tokens';
 import { AlertTriangleIcon, CheckCircleIcon, DashCircleIcon } from './icons';
 import type { FingerName } from '../engine/types';
@@ -5,6 +6,8 @@ import type { EvaluationResult } from '../engine/evaluateTypes';
 
 interface FingerListProps {
   evaluation: EvaluationResult | null;
+  cameraEnabled?: boolean;
+  isMobile?: boolean;
 }
 
 const ORDERED_FINGERS: ReadonlyArray<{ id: FingerName; label: string }> = [
@@ -24,9 +27,81 @@ function getFingerProblemText(feedbackKey: string | null): string {
   return 'Adjust finger';
 }
 
-export function FingerList({ evaluation }: FingerListProps) {
+export function FingerList({
+  evaluation,
+  cameraEnabled = true,
+  isMobile = false,
+}: FingerListProps) {
+  const [mobileExpanded, setMobileExpanded] = useState<boolean>(false);
+
   const isEvaluable =
-    evaluation !== null && evaluation.status !== 'unable_to_evaluate';
+    cameraEnabled &&
+    evaluation !== null &&
+    evaluation.status !== 'unable_to_evaluate';
+
+  // Mobile collapsed view: single row of five finger icons that expands on tap
+  if (isMobile && !mobileExpanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => setMobileExpanded(true)}
+        aria-expanded={false}
+        aria-label="Finger status overview, tap to expand details"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: tokens.shape.fingerRowHeight,
+          width: '100%',
+          padding: '0 8px',
+          background: 'none',
+          border: 'none',
+          borderBottom: `${tokens.shape.borderWidth} solid ${tokens.colors.rowDivider}`,
+          cursor: 'pointer',
+        }}
+      >
+        <span
+          style={{
+            ...tokens.typography.fingerName,
+            color: tokens.colors.ink,
+          }}
+        >
+          Fingers
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {ORDERED_FINGERS.map(({ id }) => {
+            const passed = isEvaluable && Boolean(evaluation?.fingers[id]?.passed);
+            const needsAttention =
+              isEvaluable && evaluation?.fingers[id] && !passed;
+
+            return (
+              <div
+                key={id}
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {passed && <CheckCircleIcon size={18} color={tokens.colors.ink} />}
+                {needsAttention && (
+                  <AlertTriangleIcon
+                    size={18}
+                    color={tokens.colors.overlayNeedsAttention}
+                  />
+                )}
+                {!passed && !needsAttention && (
+                  <DashCircleIcon size={18} color={tokens.colors.overlayNeutral} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </button>
+    );
+  }
 
   return (
     <div
@@ -36,6 +111,25 @@ export function FingerList({ evaluation }: FingerListProps) {
         width: '100%',
       }}
     >
+      {isMobile && mobileExpanded && (
+        <button
+          type="button"
+          onClick={() => setMobileExpanded(false)}
+          aria-expanded={true}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: tokens.colors.mutedText,
+            fontSize: '12px',
+            textAlign: 'right',
+            cursor: 'pointer',
+            padding: '4px 0',
+          }}
+        >
+          Collapse
+        </button>
+      )}
+
       {ORDERED_FINGERS.map(({ id, label }, index) => {
         let state: 'passed' | 'attention' | 'not_checked' = 'not_checked';
         let statusText = 'Not checked';

@@ -11,6 +11,7 @@ import {
 } from '../engine';
 import type { SignReferenceEntry } from '../packs/schema';
 import { tokens } from './tokens';
+import { CameraOffIcon } from './icons';
 
 interface CameraPanelProps {
   cameraEnabled: boolean;
@@ -18,6 +19,8 @@ interface CameraPanelProps {
   pack: SignPackBundle;
   referenceEntry?: SignReferenceEntry;
   showReferenceInset?: boolean;
+  isLessonComplete?: boolean;
+  isMobile?: boolean;
   onEvaluationChange?: (result: EvaluationResult) => void;
   onToggleCamera?: () => void;
 }
@@ -58,6 +61,8 @@ export function CameraPanel({
   pack,
   referenceEntry,
   showReferenceInset = false,
+  isLessonComplete = false,
+  isMobile = false,
   onEvaluationChange,
   onToggleCamera,
 }: CameraPanelProps) {
@@ -316,7 +321,14 @@ export function CameraPanel({
             }
             const ctx = canvas.getContext('2d');
             if (ctx) {
-              drawOverlay(ctx, canvas.width, canvas.height, detectedLandmarks, currentEval);
+              drawOverlay(
+                ctx,
+                canvas.width,
+                canvas.height,
+                detectedLandmarks,
+                currentEval,
+                isLessonComplete
+              );
             }
           }
         };
@@ -340,8 +352,9 @@ export function CameraPanel({
       style={{
         position: 'relative',
         width: '100%',
-        height: '100%',
-        minHeight: '600px',
+        height: isMobile ? 'auto' : '100%',
+        aspectRatio: isMobile ? '3 / 4' : undefined,
+        minHeight: isMobile ? undefined : '600px',
         backgroundColor: tokens.colors.cameraSurface,
         borderRadius: tokens.shape.radiusPanel,
         overflow: 'hidden',
@@ -374,10 +387,10 @@ export function CameraPanel({
             width: '8px',
             height: '8px',
             borderRadius: '50%',
-            backgroundColor: handState.isPassing
+            backgroundColor: isLessonComplete || handState.isPassing
               ? tokens.colors.overlayPassing
               : 'transparent',
-            border: handState.isPassing
+            border: isLessonComplete || handState.isPassing
               ? 'none'
               : `1.5px solid ${
                   handState.detected
@@ -388,7 +401,9 @@ export function CameraPanel({
           }}
         />
         <span>
-          {handState.isPassing
+          {isLessonComplete
+            ? 'Passing'
+            : handState.isPassing
             ? 'Passing'
             : handState.detected
             ? 'Needs attention'
@@ -432,9 +447,10 @@ export function CameraPanel({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '12px',
+            gap: '14px',
           }}
         >
+          <CameraOffIcon size={32} color={tokens.colors.overlayNeutral} />
           <div
             style={{
               color: tokens.colors.overlayNeutral,
@@ -450,7 +466,7 @@ export function CameraPanel({
               onClick={onToggleCamera}
               style={{
                 height: tokens.shape.buttonHeight,
-                padding: '0 16px',
+                padding: '0 18px',
                 borderRadius: tokens.shape.radiusControl,
                 border: `${tokens.shape.borderWidth} solid ${tokens.colors.borderStrong}`,
                 backgroundColor: tokens.colors.surface,
@@ -460,14 +476,14 @@ export function CameraPanel({
                 cursor: 'pointer',
               }}
             >
-              Turn camera on
+              Turn on camera
             </button>
           )}
         </div>
       )}
 
-      {/* Learn Mode: ReferenceInset at bottom-left */}
-      {showReferenceInset && referenceEntry && referenceEntry.canonicalLandmarks && (
+      {/* Learn Mode: ReferenceInset at bottom-left (hidden when lesson complete) */}
+      {showReferenceInset && !isLessonComplete && referenceEntry && referenceEntry.canonicalLandmarks && (
         <ReferenceInset
           landmarks={referenceEntry.canonicalLandmarks}
         />
@@ -488,13 +504,15 @@ function drawOverlay(
   width: number,
   height: number,
   landmarks: readonly Vec3[] | null,
-  evaluation: EvaluationResult | null
+  evaluation: EvaluationResult | null,
+  isLessonComplete: boolean = false
 ) {
   ctx.clearRect(0, 0, width, height);
   if (!landmarks || landmarks.length < 21) return;
 
   const isEvaluable =
-    evaluation !== null && evaluation.status !== 'unable_to_evaluate';
+    isLessonComplete ||
+    (evaluation !== null && evaluation.status !== 'unable_to_evaluate');
 
   // 1. Palm bridge
   ctx.save();
@@ -515,12 +533,19 @@ function drawOverlay(
   const fingers: FingerName[] = ['thumb', 'index', 'middle', 'ring', 'pinky'];
   for (const finger of fingers) {
     const fingerRes = isEvaluable ? evaluation?.fingers[finger] : null;
-    const isPassing = isEvaluable ? Boolean(fingerRes?.passed) : false;
+    const isPassing = isLessonComplete
+      ? true
+      : isEvaluable
+      ? Boolean(fingerRes?.passed)
+      : false;
 
     let strokeColor: string = tokens.colors.overlayNeutral;
     let dashed = false;
 
-    if (isEvaluable) {
+    if (isLessonComplete) {
+      strokeColor = tokens.colors.overlayPassing;
+      dashed = false;
+    } else if (isEvaluable) {
       if (isPassing) {
         strokeColor = tokens.colors.overlayPassing;
         dashed = false;
