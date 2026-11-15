@@ -100,8 +100,29 @@ export function SetupCard({
             maxWidth: '440px',
           }}
         >
-          This app needs the camera to check your signing. Allow camera access in
-          Windows Settings &gt; Privacy &amp; security &gt; Camera, then try again.
+          This app needs the camera to check your signing. Allow camera access in{' '}
+          {typeof window !== 'undefined' &&
+          typeof (window as any).desktopBridge?.openCameraSettings === 'function' ? (
+            <button
+              type="button"
+              onClick={() => (window as any).desktopBridge.openCameraSettings()}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: tokens.colors.ink,
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                font: 'inherit',
+                fontWeight: 600,
+              }}
+            >
+              Windows Settings &gt; Privacy &amp; security &gt; Camera
+            </button>
+          ) : (
+            'Windows Settings > Privacy & security > Camera'
+          )}
+          , then try again.
         </p>
         <button
           type="button"
