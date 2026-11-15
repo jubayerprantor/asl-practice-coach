@@ -1,6 +1,11 @@
 import { CameraView } from './ui/CameraView';
+import { SyntheticOverlayPreview } from './ui/SyntheticOverlayPreview';
 
 export default function App() {
+  const showSyntheticPreview =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('syntheticPreview') === '1';
+
   return (
     <main style={{ fontFamily: 'system-ui, sans-serif', padding: '1.5rem' }}>
       <header style={{ marginBottom: '1rem' }}>
@@ -13,6 +18,8 @@ export default function App() {
       </header>
 
       <CameraView />
+
+      {showSyntheticPreview && <SyntheticOverlayPreview />}
     </main>
   );
 }

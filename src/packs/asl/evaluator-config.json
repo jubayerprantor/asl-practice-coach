@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "provisional",
+  "confidenceGate": {
+    "minMediaPipeScore": 0.7,
+    "minPalmSizeNorm": 0.08,
+    "maxPalmSizeNorm": 0.45,
+    "frameEdgeMarginNorm": 0.02,
+    "minPalmFacingZ": 0.25,
+    "maxLandmarkVelocityPerSec": 1.8
+  },
+  "hysteresis": {
+    "bandFractionOfRange": 0.08
+  },
+  "holdTimer": {
+    "defaultHoldMs": 1200,
+    "transientDropGraceMs": 120
+  }
+}
