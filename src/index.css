@@ -1,9 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
   color-scheme: light;
+
+  /* Colors */
+  --color-ground: #F6F6F3;
+  --color-surface: #FFFFFF;
+  --color-camera-surface: #181B1E;
+
+  --color-border: #E3E3DE;
+  --color-border-strong: #DADAD4;
+  --color-row-divider: #EFEFEB;
+
+  --color-ink: #16181A;
+  --color-muted-text: #5C6166;
+  --color-secondary-body: #3E4348;
+
+  --color-tab-track: #ECECE8;
+  --color-chip-neutral: #F1F1ED;
+  --color-locked-outline: #BDBFBA;
+
+  --color-overlay-passing: #5EE0C0;
+  --color-overlay-needs-attention: #FFB020;
+  --color-overlay-neutral: #8A9096;
+
+  --color-hint-card-fill: #FFF4DC;
+  --color-hint-card-border: #E8C77A;
+
+  --color-status-card-fill: #F1F1ED;
+  --color-status-card-border: #DADAD4;
+
+  /* Shape */
+  --radius-panel: 20px;
+  --radius-card: 14px;
+  --radius-button: 10px;
+  --radius-tab-track: 12px;
+  --radius-tab-inner: 9px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --spacing-page-padding: 40px;
+  --spacing-grid-gap: 24px;
+  --spacing-panel-padding: 28px;
+  --spacing-panel-section-gap: 22px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-ground);
+  color: var(--color-ink);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: inherit;
 }
 
 *:focus-visible {
-  outline: 3px solid #0284c7;
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 
@@ -17,4 +80,12 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
