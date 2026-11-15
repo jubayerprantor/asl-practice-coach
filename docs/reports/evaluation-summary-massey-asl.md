@@ -1,6 +1,6 @@
 # Step 13: Development Evaluation Summary (`massey-asl`)
 
-Generated: 2026-11-15T08:05:57.520Z
+Generated: 2026-11-15T08:14:43.929Z
 Threshold Pack Status: `provisional`
 
 ## 1. Held-Out Public Image Dataset Results (Real Images)

@@ -9,7 +9,7 @@ execSync('npx vite build --mode production', {
 });
 
 console.log('\n[package-desktop] 2. Packing unpacked desktop directory for scanning...');
-execSync('npx electron-builder --dir', { stdio: 'inherit' });
+execSync('npx electron-builder --dir --publish never', { stdio: 'inherit' });
 
 console.log('\n[package-desktop] 3. Running distScan against files inside installer app folder...');
 const appDist = resolve('release/win-unpacked/resources/app/dist');
@@ -69,7 +69,7 @@ scanFiles(appDist);
 console.log('  ✓ Packaged app folder passed distScan check (0 mock strings, 100% offline assets verified).');
 
 console.log('\n[package-desktop] 4. Building Windows NSIS installer...');
-execSync('npx electron-builder --win nsis', { stdio: 'inherit' });
+execSync('npx electron-builder --win nsis --publish never', { stdio: 'inherit' });
 
 console.log('\n================================================================================');
 console.log('                       DESKTOP BUILD COMPLETE');
