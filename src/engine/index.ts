@@ -5,3 +5,4 @@ export * from './oneEuroFilter';
 export * from './features';
 export * from './evaluateTypes';
 export * from './evaluate';
+export * from './leitner';

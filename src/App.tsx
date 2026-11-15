@@ -13,6 +13,7 @@ import type {
 } from './packs/schema';
 import { CheckMode } from './ui/CheckMode';
 import { LearnMode } from './ui/LearnMode';
+import { ProgressDashboard } from './ui/ProgressDashboard';
 import { SyntheticOverlayPreview } from './ui/SyntheticOverlayPreview';
 
 const ASL_PACK: SignPackBundle = {
@@ -25,7 +26,7 @@ const REFERENCE_PACK = referenceJson as ReferencePackFile;
 const CURRICULUM_PACK = curriculumJson as CurriculumPackFile;
 
 export default function App() {
-  const [mode, setMode] = useState<'learn' | 'check'>('learn');
+  const [mode, setMode] = useState<'learn' | 'check' | 'progress'>('learn');
 
   const showSyntheticPreview =
     typeof window !== 'undefined' &&
@@ -54,7 +55,7 @@ export default function App() {
           </p>
         </div>
 
-        <nav aria-label="Practice modes" style={{ display: 'flex', gap: '0.5rem' }}>
+        <nav aria-label="Practice modes" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={() => setMode('learn')}
@@ -87,21 +88,46 @@ export default function App() {
           >
             Check Mode
           </button>
+          <button
+            type="button"
+            onClick={() => setMode('progress')}
+            aria-pressed={mode === 'progress'}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              border: '1px solid #0284c7',
+              backgroundColor: mode === 'progress' ? '#0284c7' : '#ffffff',
+              color: mode === 'progress' ? '#ffffff' : '#0284c7',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Progress &amp; Adaptive
+          </button>
         </nav>
       </header>
 
-      {mode === 'learn' ? (
+      {mode === 'learn' && (
         <LearnMode
           pack={ASL_PACK}
           feedbackPack={FEEDBACK_PACK}
           referencePack={REFERENCE_PACK}
           curriculumPack={CURRICULUM_PACK}
         />
-      ) : (
+      )}
+
+      {mode === 'check' && (
         <CheckMode
           pack={ASL_PACK}
           feedbackPack={FEEDBACK_PACK}
           referencePack={REFERENCE_PACK}
+        />
+      )}
+
+      {mode === 'progress' && (
+        <ProgressDashboard
+          pack={ASL_PACK}
+          feedbackPack={FEEDBACK_PACK}
         />
       )}
 
