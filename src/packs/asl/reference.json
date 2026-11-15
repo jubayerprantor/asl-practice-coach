@@ -1,1 +1,606 @@
-{}
+{
+  "schemaVersion": "1.0.0",
+  "language": "asl",
+  "signs": {
+    "A": {
+      "sign": "A",
+      "authoredByHuman": true,
+      "summary": "Make a fist with your four fingers curled into your palm. Keep your thumb upright resting alongside the outer edge of your index finger.",
+      "fingerNotes": {
+        "thumb": "Rest thumb straight up against the side of your index knuckle, not tucked over fingers.",
+        "index": "Curled tightly into the palm.",
+        "middle": "Curled tightly into the palm.",
+        "ring": "Curled tightly into the palm.",
+        "pinky": "Curled tightly into the palm."
+      },
+      "orientationNote": "Palm faces outward toward the viewer with an upright wrist.",
+      "canonicalLandmarks": [
+        {
+          "x": 0.5,
+          "y": 0.82,
+          "z": 0
+        },
+        {
+          "x": 0.44,
+          "y": 0.77,
+          "z": -0.02
+        },
+        {
+          "x": 0.41,
+          "y": 0.7,
+          "z": -0.03
+        },
+        {
+          "x": 0.415,
+          "y": 0.62,
+          "z": -0.02
+        },
+        {
+          "x": 0.42,
+          "y": 0.55,
+          "z": -0.015
+        },
+        {
+          "x": 0.445,
+          "y": 0.62,
+          "z": -0.01
+        },
+        {
+          "x": 0.445,
+          "y": 0.56,
+          "z": -0.04
+        },
+        {
+          "x": 0.45,
+          "y": 0.61,
+          "z": -0.045
+        },
+        {
+          "x": 0.455,
+          "y": 0.64,
+          "z": -0.02
+        },
+        {
+          "x": 0.495,
+          "y": 0.61,
+          "z": -0.005
+        },
+        {
+          "x": 0.495,
+          "y": 0.55,
+          "z": -0.04
+        },
+        {
+          "x": 0.5,
+          "y": 0.605,
+          "z": -0.045
+        },
+        {
+          "x": 0.505,
+          "y": 0.635,
+          "z": -0.02
+        },
+        {
+          "x": 0.54,
+          "y": 0.625,
+          "z": -0.008
+        },
+        {
+          "x": 0.545,
+          "y": 0.575,
+          "z": -0.04
+        },
+        {
+          "x": 0.54,
+          "y": 0.62,
+          "z": -0.045
+        },
+        {
+          "x": 0.535,
+          "y": 0.64,
+          "z": -0.015
+        },
+        {
+          "x": 0.582,
+          "y": 0.65,
+          "z": -0.012
+        },
+        {
+          "x": 0.585,
+          "y": 0.605,
+          "z": -0.04
+        },
+        {
+          "x": 0.58,
+          "y": 0.65,
+          "z": -0.045
+        },
+        {
+          "x": 0.575,
+          "y": 0.67,
+          "z": -0.015
+        }
+      ]
+    },
+    "B": {
+      "sign": "B",
+      "authoredByHuman": true,
+      "summary": "Hold all four fingers straight up and pressed together. Fold your thumb flat across your palm under the fingers.",
+      "fingerNotes": {
+        "thumb": "Folded flat across the palm.",
+        "index": "Fully extended upward and touching middle finger.",
+        "middle": "Fully extended upward and touching index and ring fingers.",
+        "ring": "Fully extended upward and touching middle and pinky fingers.",
+        "pinky": "Fully extended upward and touching ring finger."
+      },
+      "orientationNote": "Palm faces directly outward with hand held vertically.",
+      "canonicalLandmarks": [
+        {
+          "x": 0.5,
+          "y": 0.82,
+          "z": 0
+        },
+        {
+          "x": 0.44,
+          "y": 0.77,
+          "z": -0.02
+        },
+        {
+          "x": 0.41,
+          "y": 0.7,
+          "z": -0.03
+        },
+        {
+          "x": 0.46,
+          "y": 0.65,
+          "z": -0.035
+        },
+        {
+          "x": 0.515,
+          "y": 0.62,
+          "z": -0.04
+        },
+        {
+          "x": 0.445,
+          "y": 0.62,
+          "z": -0.01
+        },
+        {
+          "x": 0.442,
+          "y": 0.5,
+          "z": -0.012
+        },
+        {
+          "x": 0.44,
+          "y": 0.41,
+          "z": -0.014
+        },
+        {
+          "x": 0.438,
+          "y": 0.33,
+          "z": -0.015
+        },
+        {
+          "x": 0.495,
+          "y": 0.61,
+          "z": -0.005
+        },
+        {
+          "x": 0.495,
+          "y": 0.48,
+          "z": -0.007
+        },
+        {
+          "x": 0.495,
+          "y": 0.38,
+          "z": -0.009
+        },
+        {
+          "x": 0.495,
+          "y": 0.295,
+          "z": -0.01
+        },
+        {
+          "x": 0.54,
+          "y": 0.625,
+          "z": -0.008
+        },
+        {
+          "x": 0.542,
+          "y": 0.505,
+          "z": -0.01
+        },
+        {
+          "x": 0.544,
+          "y": 0.415,
+          "z": -0.012
+        },
+        {
+          "x": 0.545,
+          "y": 0.34,
+          "z": -0.014
+        },
+        {
+          "x": 0.582,
+          "y": 0.65,
+          "z": -0.012
+        },
+        {
+          "x": 0.586,
+          "y": 0.555,
+          "z": -0.015
+        },
+        {
+          "x": 0.589,
+          "y": 0.485,
+          "z": -0.017
+        },
+        {
+          "x": 0.591,
+          "y": 0.42,
+          "z": -0.019
+        }
+      ]
+    },
+    "L": {
+      "sign": "L",
+      "authoredByHuman": true,
+      "summary": "Extend your thumb horizontally and index finger vertically to form a right-angle \"L\" shape. Curl middle, ring, and pinky into your palm.",
+      "fingerNotes": {
+        "thumb": "Extended horizontally outward to the side at a 90° angle.",
+        "index": "Extended straight upward vertically.",
+        "middle": "Curled tightly into the palm.",
+        "ring": "Curled tightly into the palm.",
+        "pinky": "Curled tightly into the palm."
+      },
+      "orientationNote": "Palm faces outward toward the viewer.",
+      "canonicalLandmarks": [
+        {
+          "x": 0.5,
+          "y": 0.82,
+          "z": 0
+        },
+        {
+          "x": 0.44,
+          "y": 0.77,
+          "z": -0.02
+        },
+        {
+          "x": 0.38,
+          "y": 0.75,
+          "z": -0.03
+        },
+        {
+          "x": 0.32,
+          "y": 0.75,
+          "z": -0.03
+        },
+        {
+          "x": 0.26,
+          "y": 0.75,
+          "z": -0.03
+        },
+        {
+          "x": 0.445,
+          "y": 0.62,
+          "z": -0.01
+        },
+        {
+          "x": 0.442,
+          "y": 0.5,
+          "z": -0.012
+        },
+        {
+          "x": 0.44,
+          "y": 0.41,
+          "z": -0.014
+        },
+        {
+          "x": 0.438,
+          "y": 0.33,
+          "z": -0.015
+        },
+        {
+          "x": 0.495,
+          "y": 0.61,
+          "z": -0.005
+        },
+        {
+          "x": 0.495,
+          "y": 0.55,
+          "z": -0.04
+        },
+        {
+          "x": 0.5,
+          "y": 0.605,
+          "z": -0.045
+        },
+        {
+          "x": 0.505,
+          "y": 0.635,
+          "z": -0.02
+        },
+        {
+          "x": 0.54,
+          "y": 0.625,
+          "z": -0.008
+        },
+        {
+          "x": 0.545,
+          "y": 0.575,
+          "z": -0.04
+        },
+        {
+          "x": 0.54,
+          "y": 0.62,
+          "z": -0.045
+        },
+        {
+          "x": 0.535,
+          "y": 0.64,
+          "z": -0.015
+        },
+        {
+          "x": 0.582,
+          "y": 0.65,
+          "z": -0.012
+        },
+        {
+          "x": 0.585,
+          "y": 0.605,
+          "z": -0.04
+        },
+        {
+          "x": 0.58,
+          "y": 0.65,
+          "z": -0.045
+        },
+        {
+          "x": 0.575,
+          "y": 0.67,
+          "z": -0.015
+        }
+      ]
+    },
+    "V": {
+      "sign": "V",
+      "authoredByHuman": true,
+      "summary": "Extend your index and middle fingers upward in a separated \"V\" (peace) shape. Fold your thumb over your curled ring and pinky fingers.",
+      "fingerNotes": {
+        "thumb": "Folded across palm holding down ring and pinky fingers.",
+        "index": "Fully extended upward and angled slightly outward.",
+        "middle": "Fully extended upward and angled slightly outward.",
+        "ring": "Curled tightly into the palm.",
+        "pinky": "Curled tightly into the palm."
+      },
+      "orientationNote": "Palm faces directly outward with fingers spread into a \"V\".",
+      "canonicalLandmarks": [
+        {
+          "x": 0.5,
+          "y": 0.82,
+          "z": 0
+        },
+        {
+          "x": 0.44,
+          "y": 0.77,
+          "z": -0.02
+        },
+        {
+          "x": 0.42,
+          "y": 0.7,
+          "z": -0.035
+        },
+        {
+          "x": 0.47,
+          "y": 0.66,
+          "z": -0.045
+        },
+        {
+          "x": 0.525,
+          "y": 0.65,
+          "z": -0.05
+        },
+        {
+          "x": 0.445,
+          "y": 0.62,
+          "z": -0.01
+        },
+        {
+          "x": 0.42,
+          "y": 0.5,
+          "z": -0.012
+        },
+        {
+          "x": 0.4,
+          "y": 0.41,
+          "z": -0.014
+        },
+        {
+          "x": 0.382,
+          "y": 0.33,
+          "z": -0.015
+        },
+        {
+          "x": 0.495,
+          "y": 0.61,
+          "z": -0.005
+        },
+        {
+          "x": 0.515,
+          "y": 0.48,
+          "z": -0.007
+        },
+        {
+          "x": 0.532,
+          "y": 0.38,
+          "z": -0.009
+        },
+        {
+          "x": 0.548,
+          "y": 0.295,
+          "z": -0.01
+        },
+        {
+          "x": 0.54,
+          "y": 0.625,
+          "z": -0.008
+        },
+        {
+          "x": 0.545,
+          "y": 0.575,
+          "z": -0.04
+        },
+        {
+          "x": 0.54,
+          "y": 0.62,
+          "z": -0.045
+        },
+        {
+          "x": 0.535,
+          "y": 0.64,
+          "z": -0.015
+        },
+        {
+          "x": 0.582,
+          "y": 0.65,
+          "z": -0.012
+        },
+        {
+          "x": 0.585,
+          "y": 0.605,
+          "z": -0.04
+        },
+        {
+          "x": 0.58,
+          "y": 0.65,
+          "z": -0.045
+        },
+        {
+          "x": 0.575,
+          "y": 0.67,
+          "z": -0.015
+        }
+      ]
+    },
+    "Y": {
+      "sign": "Y",
+      "authoredByHuman": true,
+      "summary": "Extend your thumb outward to the side and pinky outward to the opposite side (\"hang loose\" shape). Curl your index, middle, and ring fingers into your palm.",
+      "fingerNotes": {
+        "thumb": "Extended fully outward to the side.",
+        "index": "Curled tightly into the palm.",
+        "middle": "Curled tightly into the palm.",
+        "ring": "Curled tightly into the palm.",
+        "pinky": "Extended fully outward to the side."
+      },
+      "orientationNote": "Palm faces forward toward the viewer.",
+      "canonicalLandmarks": [
+        {
+          "x": 0.5,
+          "y": 0.82,
+          "z": 0
+        },
+        {
+          "x": 0.44,
+          "y": 0.77,
+          "z": -0.02
+        },
+        {
+          "x": 0.38,
+          "y": 0.75,
+          "z": -0.03
+        },
+        {
+          "x": 0.32,
+          "y": 0.75,
+          "z": -0.03
+        },
+        {
+          "x": 0.26,
+          "y": 0.75,
+          "z": -0.03
+        },
+        {
+          "x": 0.445,
+          "y": 0.62,
+          "z": -0.01
+        },
+        {
+          "x": 0.445,
+          "y": 0.55,
+          "z": -0.04
+        },
+        {
+          "x": 0.45,
+          "y": 0.605,
+          "z": -0.045
+        },
+        {
+          "x": 0.455,
+          "y": 0.635,
+          "z": -0.02
+        },
+        {
+          "x": 0.495,
+          "y": 0.61,
+          "z": -0.005
+        },
+        {
+          "x": 0.495,
+          "y": 0.55,
+          "z": -0.04
+        },
+        {
+          "x": 0.5,
+          "y": 0.605,
+          "z": -0.045
+        },
+        {
+          "x": 0.505,
+          "y": 0.635,
+          "z": -0.02
+        },
+        {
+          "x": 0.54,
+          "y": 0.625,
+          "z": -0.008
+        },
+        {
+          "x": 0.545,
+          "y": 0.575,
+          "z": -0.04
+        },
+        {
+          "x": 0.54,
+          "y": 0.62,
+          "z": -0.045
+        },
+        {
+          "x": 0.535,
+          "y": 0.64,
+          "z": -0.015
+        },
+        {
+          "x": 0.582,
+          "y": 0.65,
+          "z": -0.012
+        },
+        {
+          "x": 0.63,
+          "y": 0.56,
+          "z": -0.015
+        },
+        {
+          "x": 0.67,
+          "y": 0.49,
+          "z": -0.017
+        },
+        {
+          "x": 0.71,
+          "y": 0.43,
+          "z": -0.019
+        }
+      ]
+    }
+  }
+}

@@ -1,1 +1,352 @@
-{}
+{
+  "schemaVersion": "1.0.0",
+  "language": "asl",
+  "status": "provisional",
+  "generatedAt": "2026-11-15T03:54:48.276Z",
+  "percentileLow": 5,
+  "percentileHigh": 95,
+  "signs": {
+    "A": {
+      "sign": "A",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_curl",
+          "feature": "curl_thumb_deg",
+          "finger": "thumb",
+          "label": "thumb curl",
+          "feedbackKeyBelow": "thumb_curl_more",
+          "feedbackKeyAbove": "thumb_extend_more",
+          "priority": 2,
+          "min": 0,
+          "max": 65
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        }
+      ]
+    },
+    "B": {
+      "sign": "B",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_curl",
+          "feature": "curl_thumb_deg",
+          "finger": "thumb",
+          "label": "thumb curl",
+          "feedbackKeyBelow": "thumb_curl_more",
+          "feedbackKeyAbove": "thumb_extend_more",
+          "priority": 2,
+          "min": 60,
+          "max": 135
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "index_middle_spread",
+          "feature": "dist_index_middle",
+          "finger": "index",
+          "label": "index-middle spacing",
+          "feedbackKeyBelow": "index_middle_spread_more",
+          "feedbackKeyAbove": "index_middle_bring_together",
+          "priority": 3,
+          "min": 0,
+          "max": 0.55
+        }
+      ]
+    },
+    "L": {
+      "sign": "L",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_curl",
+          "feature": "curl_thumb_deg",
+          "finger": "thumb",
+          "label": "thumb curl",
+          "feedbackKeyBelow": "thumb_curl_more",
+          "feedbackKeyAbove": "thumb_extend_more",
+          "priority": 2,
+          "min": 0,
+          "max": 55
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        }
+      ]
+    },
+    "V": {
+      "sign": "V",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_curl",
+          "feature": "curl_thumb_deg",
+          "finger": "thumb",
+          "label": "thumb curl",
+          "feedbackKeyBelow": "thumb_curl_more",
+          "feedbackKeyAbove": "thumb_extend_more",
+          "priority": 2,
+          "min": 65,
+          "max": 135
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "index_middle_spread",
+          "feature": "dist_index_middle",
+          "finger": "index",
+          "label": "index-middle spacing",
+          "feedbackKeyBelow": "index_middle_spread_more",
+          "feedbackKeyAbove": "index_middle_bring_together",
+          "priority": 3,
+          "min": 0.45,
+          "max": 2.5
+        }
+      ]
+    },
+    "Y": {
+      "sign": "Y",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_curl",
+          "feature": "curl_thumb_deg",
+          "finger": "thumb",
+          "label": "thumb curl",
+          "feedbackKeyBelow": "thumb_curl_more",
+          "feedbackKeyAbove": "thumb_extend_more",
+          "priority": 2,
+          "min": 0,
+          "max": 55
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 1,
+          "min": 140,
+          "max": 270
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        }
+      ]
+    }
+  }
+}
