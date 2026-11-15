@@ -1,4 +1,5 @@
 import http from 'http';
+import os from 'os';
 import { readFileSync, existsSync, statSync } from 'fs';
 import { resolve, join, extname, dirname } from 'path';
 import { spawn } from 'child_process';
@@ -6,8 +7,25 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const distDir = resolve(__dirname, '../dist');
-const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const userDataDir = 'C:\\Users\\DSU\\AppData\\Local\\Temp\\chrome-smoke-test-profile';
+
+function findChrome(): string {
+  const candidates = [
+    process.env.CHROME_BIN,
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    process.env.LOCALAPPDATA
+      ? join(process.env.LOCALAPPDATA, 'Google\\Chrome\\Application\\chrome.exe')
+      : null,
+  ].filter(Boolean) as string[];
+
+  for (const c of candidates) {
+    if (existsSync(c)) return c;
+  }
+  return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+}
+
+const chromePath = findChrome();
+const userDataDir = join(os.tmpdir(), 'chrome-smoke-test-profile');
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',

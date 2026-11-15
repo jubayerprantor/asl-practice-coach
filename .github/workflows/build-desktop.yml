@@ -1,0 +1,58 @@
+name: Build Desktop Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Publish as a GitHub Release draft'
+        required: false
+        type: boolean
+        default: false
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build & Package Windows NSIS
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Web Verification Pipeline
+        run: npm run verify:web
+
+      - name: Package Desktop Installer (with distScan check)
+        run: npm run build:desktop
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ASL-Practice-Coach-Windows-Setup
+          path: release/*.exe
+          retention-days: 14
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.create_release == true
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release/*.exe
+            release/*.blockmap
