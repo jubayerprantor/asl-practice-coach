@@ -5,17 +5,18 @@ import {
   toSignPackBundle,
 } from './packs/packRegistry';
 import { tokens } from './ui/tokens';
-import { AppHeader, type AppMode } from './ui/AppHeader';
+import { AppHeader } from './ui/components/AppHeader';
 import { MobileBottomNav } from './ui/MobileBottomNav';
-import { CameraPanel } from './ui/CameraPanel';
-import { CoachPanel } from './ui/CoachPanel';
-import { CameraSetupCard } from './ui/CameraSetupCard';
-import { HomePicker } from './ui/HomePicker';
-import { ProgressScreen } from './ui/ProgressScreen';
+import { SetupScreen } from './ui/screens/Setup';
+import { HomeScreen } from './ui/screens/Home';
+import { ProgressScreen } from './ui/screens/Progress';
+import { LearnScreen } from './ui/screens/Learn';
+import { CheckScreen } from './ui/screens/Check';
 import { DebouncedSpeechCoach } from './ui/speechCoach';
 import { logPracticeAttempt } from './storage/db';
 import type { EvaluationResult, FingerName } from './engine';
-import type { LessonSignStatus } from './ui/LessonPath';
+import type { LessonSignStatus } from './ui/components/LessonPath';
+import type { AppMode } from './ui/components/ModeTabs';
 
 export default function App() {
   const availablePacks = useMemo(() => listAvailableLanguagePacks(), []);
@@ -29,19 +30,23 @@ export default function App() {
     [loadedPack]
   );
 
-  // Responsive mobile layout detection
-  const [isMobile, setIsMobile] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth < 768;
+  // Section 19: Responsive breakpoints (< 700px phone, 700-1099px tablet, >= 1100px desktop)
+  const [windowWidth, setWindowWidth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1200;
+    return window.innerWidth;
   });
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setWindowWidth(window.innerWidth);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const isMobile = windowWidth < 700;
+  const isTablet = windowWidth >= 700 && windowWidth < 1100;
+  const isTouch = isMobile || isTablet;
 
   // Section 11: Setup & Permission states
   const [hasCompletedSetup, setHasCompletedSetup] = useState<boolean>(() => {
@@ -57,7 +62,7 @@ export default function App() {
     return setupDone ? 'home' : 'learn';
   });
 
-  // Controls: Voice is optional and off by default
+  // Controls: Voice is optional and off by default (Section 17)
   const [voiceEnabled, setVoiceEnabled] = useState<boolean>(false);
   const [cameraEnabled, setCameraEnabled] = useState<boolean>(true);
   const [showReference, setShowReference] = useState<boolean>(false);
@@ -123,7 +128,7 @@ export default function App() {
     [loadedPack, currentTargetSign]
   );
 
-  // Speech coach
+  // Speech coach (Section 21: reads only current text, once per change, never every frame)
   const speechCoachRef = useRef<DebouncedSpeechCoach>(
     new DebouncedSpeechCoach(4000)
   );
@@ -136,13 +141,13 @@ export default function App() {
   // Screen reader live status message
   const [srMessage, setSrMessage] = useState<string>('');
 
-  // Voice & Screen reader updates based on evaluation changes
+  // Voice & Screen reader updates (Section 21)
   useEffect(() => {
     if (!evaluation || !cameraEnabled) return;
 
     let announce = '';
     if (evaluation.status === 'unable_to_evaluate') {
-      announce = "Can't check this yet. Bring your whole hand into view.";
+      announce = 'Show your hand to the camera.';
     } else if (evaluation.status === 'correct') {
       announce = 'Good. Hold that position.';
     } else if (evaluation.topIssue) {
@@ -209,10 +214,9 @@ export default function App() {
         setCompletedHolds(nextHolds);
 
         if (nextHolds >= requiredHolds) {
-          // Section 9: Enter Lesson complete view!
+          // Section 9: Enter Lesson complete view
           setIsLessonComplete(true);
         } else {
-          // Brief pause before accepting next hold
           const timer = setTimeout(() => {
             holdAlreadyHandledRef.current = false;
           }, 400);
@@ -283,7 +287,7 @@ export default function App() {
     fingerMistakesRef.current = {};
   }, []);
 
-  // Keyboard shortcuts (Rule 6)
+  // Keyboard shortcuts (Rule 6, Section 14)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -335,7 +339,6 @@ export default function App() {
         return { sign, state: 'done' as const };
       }
       if (isLessonComplete && idx === lessonSignIdx + 1) {
-        // Section 9: "the next letter is an ink-outlined chip (not locked, not filled)"
         return { sign, state: 'unlocked_next' as const };
       }
       if (idx === lessonSignIdx) {
@@ -388,7 +391,7 @@ export default function App() {
         flexDirection: 'column',
       }}
     >
-      {/* Accessible live region for screen readers (debounced status) */}
+      {/* Accessible live region for screen readers (Section 23 item 8) */}
       <div
         role="status"
         aria-live="polite"
@@ -417,6 +420,7 @@ export default function App() {
         onToggleCamera={() => setCameraEnabled((c) => !c)}
         onWordmarkClick={() => setMode('home')}
         isMobile={isMobile}
+        isTablet={isTablet}
       />
 
       {/* Main Content Area */}
@@ -433,23 +437,24 @@ export default function App() {
           flexDirection: 'column',
         }}
       >
-        {/* Section 11: Camera Setup Card (first run) */}
+        {/* Section 11: Setup & Permission denied cards */}
         {!hasCompletedSetup ? (
-          <CameraSetupCard
+          <SetupScreen
             isBlocked={isCameraBlocked}
             onStart={handleStartSetup}
             onRetryPermission={() => setIsCameraBlocked(false)}
+            isTouch={isTouch}
           />
         ) : isCameraBlocked ? (
-          /* Section 11: Permission Denied card */
-          <CameraSetupCard
+          <SetupScreen
             isBlocked={true}
             onStart={handleStartSetup}
             onRetryPermission={() => setIsCameraBlocked(false)}
+            isTouch={isTouch}
           />
         ) : mode === 'home' ? (
-          /* Section 12: Home / Mode Picker */
-          <HomePicker
+          /* Section 12: Home Screen / Mode Picker */
+          <HomeScreen
             onSelectLearn={() => setMode('learn')}
             onSelectCheck={() => setMode('check')}
             inProgressLesson={
@@ -462,6 +467,7 @@ export default function App() {
                 : null
             }
             onContinueInProgress={() => setMode('learn')}
+            isTouch={isTouch}
           />
         ) : mode === 'progress' ? (
           /* Section 10: Progress Screen */
@@ -469,69 +475,56 @@ export default function App() {
             curriculumPack={loadedPack.curriculum}
             onStartLearn={() => setMode('learn')}
             onPracticeSign={handleOpenCheckOnSign}
+            isTouch={isTouch}
+          />
+        ) : mode === 'check' ? (
+          /* Check Screen */
+          <CheckScreen
+            cameraEnabled={cameraEnabled}
+            onToggleCamera={() => setCameraEnabled(true)}
+            currentTargetSign={currentTargetSign}
+            pack={signPackBundle}
+            referenceEntry={referenceEntry}
+            feedbackPack={loadedPack.feedback}
+            evaluation={evaluation}
+            onEvaluationChange={setEvaluation}
+            showReference={showReference}
+            onToggleReference={() => setShowReference((r) => !r)}
+            isMobile={isMobile}
+            isTablet={isTablet}
           />
         ) : (
-          /* Check & Learn modes: Desktop two-column, Mobile single-column stacked */
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: tokens.spacing.gridGap,
-              minHeight: isMobile ? undefined : '700px',
-              flex: 1,
-            }}
-          >
-            {/* Left Column / Mobile Top: CameraPanel */}
-            <div
-              style={{
-                flex: isMobile ? undefined : 1,
-                minHeight: isMobile ? undefined : '700px',
-                width: '100%',
-                display: 'flex',
-              }}
-            >
-              <CameraPanel
-                cameraEnabled={cameraEnabled}
-                targetSign={currentTargetSign}
-                pack={signPackBundle}
-                referenceEntry={referenceEntry}
-                showReferenceInset={mode === 'learn' && showReference}
-                isLessonComplete={isLessonComplete}
-                isMobile={isMobile}
-                onEvaluationChange={setEvaluation}
-                onToggleCamera={() => setCameraEnabled(true)}
-              />
-            </div>
-
-            {/* Right Column / Mobile Bottom: CoachPanel */}
-            <CoachPanel
-              mode={mode}
-              targetSign={currentTargetSign}
-              showReference={showReference}
-              onToggleReference={() => setShowReference((r) => !r)}
-              evaluation={evaluation}
-              feedbackPack={loadedPack.feedback}
-              referenceEntry={referenceEntry}
-              cameraEnabled={cameraEnabled}
-              isMobile={isMobile}
-              currentLessonNumber={currentLessonIdx + 1}
-              totalLessons={lessons.length}
-              lessonSigns={lessonSigns}
-              onSelectSign={handleSelectLessonSign}
-              completedHolds={completedHolds}
-              requiredHolds={requiredHolds}
-              isLessonComplete={isLessonComplete}
-              nextSign={nextSign}
-              isLastLesson={isLastLesson}
-              mostAdjustedFinger={mostAdjustedFinger}
-              onContinueLesson={handleContinueLesson}
-              onPracticeAgain={handlePracticeAgain}
-            />
-          </div>
+          /* Learn Screen */
+          <LearnScreen
+            cameraEnabled={cameraEnabled}
+            onToggleCamera={() => setCameraEnabled(true)}
+            currentTargetSign={currentTargetSign}
+            pack={signPackBundle}
+            referenceEntry={referenceEntry}
+            feedbackPack={loadedPack.feedback}
+            evaluation={evaluation}
+            onEvaluationChange={setEvaluation}
+            showReference={showReference}
+            onToggleReference={() => setShowReference((r) => !r)}
+            currentLessonNumber={currentLessonIdx + 1}
+            totalLessons={lessons.length}
+            lessonSigns={lessonSigns}
+            onSelectSign={handleSelectLessonSign}
+            completedHolds={completedHolds}
+            requiredHolds={requiredHolds}
+            isLessonComplete={isLessonComplete}
+            nextSign={nextSign}
+            isLastLesson={isLastLesson}
+            mostAdjustedFinger={mostAdjustedFinger}
+            onContinueLesson={handleContinueLesson}
+            onPracticeAgain={handlePracticeAgain}
+            isMobile={isMobile}
+            isTablet={isTablet}
+          />
         )}
       </main>
 
-      {/* Footer (Desktop only or non-mobile view) */}
+      {/* Footer (Desktop & Tablet only) */}
       {!isMobile && (
         <footer
           style={{

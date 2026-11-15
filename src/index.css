@@ -89,3 +89,67 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Button interaction states (Section 14) */
+.btn-outlined {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.btn-outlined:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: #F1F1ED;
+}
+
+.btn-outlined:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: #ECECE8;
+}
+
+.btn-outlined:disabled,
+.btn-outlined[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-primary {
+  background-color: var(--color-ink);
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: #2A2D30;
+}
+
+.btn-primary:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: #000000;
+}
+
+.btn-primary:disabled,
+.btn-primary[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-muted-text);
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.tab-btn:hover:not([aria-selected="true"]) {
+  color: var(--color-ink);
+}
+
+.tab-btn[aria-selected="true"] {
+  background-color: var(--color-ink);
+  color: #FFFFFF;
+}

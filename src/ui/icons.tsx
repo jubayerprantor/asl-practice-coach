@@ -455,3 +455,114 @@ export function TrashIcon({
     </svg>
   );
 }
+
+export function ArrowsApartIcon({
+  size = 22,
+  color = 'currentColor',
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={size >= 28 ? 1.8 : 2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden={!props['aria-label']}
+      {...props}
+    >
+      <line x1="7" y1="12" x2="1" y2="12" />
+      <polyline points="4 9 1 12 4 15" />
+      <line x1="17" y1="12" x2="23" y2="12" />
+      <polyline points="20 9 23 12 20 15" />
+      <line x1="12" y1="8" x2="12" y2="16" />
+    </svg>
+  );
+}
+
+export function ArrowsTogetherIcon({
+  size = 22,
+  color = 'currentColor',
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={size >= 28 ? 1.8 : 2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden={!props['aria-label']}
+      {...props}
+    >
+      <line x1="2" y1="12" x2="8" y2="12" />
+      <polyline points="5 9 8 12 5 15" />
+      <line x1="22" y1="12" x2="16" y2="12" />
+      <polyline points="19 9 16 12 19 15" />
+      <line x1="12" y1="8" x2="12" y2="16" />
+    </svg>
+  );
+}
+
+export function StraightenIcon({
+  size = 22,
+  color = 'currentColor',
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={size >= 28 ? 1.8 : 2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden={!props['aria-label']}
+      {...props}
+    >
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="5 12 12 5 19 12" />
+    </svg>
+  );
+}
+
+export function CurlIcon({
+  size = 22,
+  color = 'currentColor',
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={size >= 28 ? 1.8 : 2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden={!props['aria-label']}
+      {...props}
+    >
+      <path d="M16 8a4 4 0 1 0-8 0v8a4 4 0 0 0 8 0" />
+      <polyline points="12 19 16 16 20 19" />
+    </svg>
+  );
+}
+
+export function getHintIcon(feedbackKey?: string | null) {
+  if (!feedbackKey) return AlertTriangleIcon;
+  if (feedbackKey.includes('apart')) return ArrowsApartIcon;
+  if (feedbackKey.includes('closer')) return ArrowsTogetherIcon;
+  if (feedbackKey.includes('extend_more')) return StraightenIcon;
+  if (feedbackKey.includes('curl_more')) return CurlIcon;
+  return AlertTriangleIcon;
+}
