@@ -11,7 +11,12 @@ import type { ThresholdsPackFile } from '../src/packs/schema';
 import {
   FIXTURE_LETTER_B_RIGHT,
   FIXTURE_LETTER_V_RIGHT,
+  FIXTURE_LETTER_C_RIGHT,
+  FIXTURE_LETTER_O_RIGHT,
+  FIXTURE_LETTER_D_RIGHT,
+  FIXTURE_LETTER_F_RIGHT,
 } from './fixtures/handFixtures';
+import { getLanguagePack, toSignPackBundle } from '../src/packs/packRegistry';
 import { perturbFingerCurl, perturbFingertipSpacing } from './synthetic';
 
 const TEST_CONFIG = evaluatorConfigJson as EvaluatorConfig;
@@ -283,5 +288,51 @@ describe('Evaluation Engine (/src/engine/evaluate.ts)', () => {
     expect(rBreak.status).toBe('needs_correction');
     expect(rBreak.hold.heldMs).toBe(0);
     expect(rBreak.hold.completed).toBe(false);
+  });
+
+  it('correctly evaluates canonical fixtures for Lesson 2 signs (C, O, D, F)', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    const resC = evaluate(FIXTURE_LETTER_C_RIGHT, 'C', prodPack);
+    expect(resC.status).toBe('correct');
+    expect(resC.topIssue).toBeNull();
+
+    const resO = evaluate(FIXTURE_LETTER_O_RIGHT, 'O', prodPack);
+    expect(resO.status).toBe('correct');
+    expect(resO.topIssue).toBeNull();
+
+    const resD = evaluate(FIXTURE_LETTER_D_RIGHT, 'D', prodPack);
+    expect(resD.status).toBe('correct');
+    expect(resD.topIssue).toBeNull();
+
+    const resF = evaluate(FIXTURE_LETTER_F_RIGHT, 'F', prodPack);
+    expect(resF.status).toBe('correct');
+    expect(resF.topIssue).toBeNull();
+  });
+
+  it('detects distinct finger mistakes on Lesson 2 signs', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    // Showing 'D' when target is 'O': thumb and index are far apart instead of touching
+    const wrongO = evaluate(FIXTURE_LETTER_D_RIGHT, 'O', prodPack);
+    expect(wrongO.status).toBe('needs_correction');
+    expect(wrongO.topIssue?.ruleId).toBe('thumb_index_spacing');
+    expect(wrongO.topIssue?.feedbackKey).toBe('thumb_index_closer');
+    expect(wrongO.fingers.index.passed).toBe(false);
+    expect(wrongO.fingers.thumb.passed).toBe(false);
+
+    // Showing 'C' when target is 'O': thumb and index are apart instead of touching
+    const openCForO = evaluate(FIXTURE_LETTER_C_RIGHT, 'O', prodPack);
+    expect(openCForO.status).toBe('needs_correction');
+    expect(openCForO.topIssue?.feedbackKey).toBe('thumb_index_closer');
+
+    // Showing 'O' when target is 'C': fingers are curled too tight and closed into an O
+    const closedOForC = evaluate(FIXTURE_LETTER_O_RIGHT, 'C', prodPack);
+    expect(closedOForC.status).toBe('needs_correction');
+    expect(closedOForC.fingers.middle.passed).toBe(false);
+    expect(closedOForC.fingers.middle.feedbackKey).toBe('middle_extend_more');
+    expect(
+      closedOForC.conditions.find((c) => c.ruleId === 'thumb_index_spacing')?.passed
+    ).toBe(false);
   });
 });

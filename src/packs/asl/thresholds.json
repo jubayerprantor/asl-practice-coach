@@ -347,6 +347,312 @@
           "max": 45
         }
       ]
+    },
+    "C": {
+      "sign": "C",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_curl",
+          "feature": "curl_thumb_deg",
+          "finger": "thumb",
+          "label": "thumb curl angle",
+          "feedbackKeyBelow": "thumb_curl_more",
+          "feedbackKeyAbove": "thumb_extend_more",
+          "priority": 2,
+          "min": 25,
+          "max": 110
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl angle",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 45,
+          "max": 125
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl angle",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 40,
+          "max": 120
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl angle",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 2,
+          "min": 35,
+          "max": 115
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl angle",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 2,
+          "min": 25,
+          "max": 105
+        },
+        {
+          "id": "thumb_index_spacing",
+          "feature": "dist_thumb_index",
+          "finger": "thumb",
+          "secondaryFinger": "index",
+          "label": "thumb-index spacing",
+          "feedbackKeyBelow": "thumb_index_apart",
+          "feedbackKeyAbove": "thumb_index_closer",
+          "priority": 2,
+          "min": 0.35,
+          "max": 1.2
+        }
+      ]
+    },
+    "O": {
+      "sign": "O",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_curl",
+          "feature": "curl_thumb_deg",
+          "finger": "thumb",
+          "label": "thumb curl angle",
+          "feedbackKeyBelow": "thumb_curl_more",
+          "feedbackKeyAbove": "thumb_extend_more",
+          "priority": 2,
+          "min": 25,
+          "max": 100
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl angle",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 110,
+          "max": 200
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl angle",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 115,
+          "max": 205
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl angle",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 2,
+          "min": 110,
+          "max": 200
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl angle",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 2,
+          "min": 95,
+          "max": 190
+        },
+        {
+          "id": "thumb_index_spacing",
+          "feature": "dist_thumb_index",
+          "finger": "thumb",
+          "secondaryFinger": "index",
+          "label": "thumb-index spacing",
+          "feedbackKeyBelow": "thumb_index_apart",
+          "feedbackKeyAbove": "thumb_index_closer",
+          "priority": 1,
+          "min": 0,
+          "max": 0.22
+        },
+        {
+          "id": "thumb_middle_spacing",
+          "feature": "dist_thumb_middle",
+          "finger": "thumb",
+          "secondaryFinger": "middle",
+          "label": "thumb-middle spacing",
+          "feedbackKeyBelow": "thumb_middle_apart",
+          "feedbackKeyAbove": "thumb_middle_closer",
+          "priority": 2,
+          "min": 0,
+          "max": 0.25
+        }
+      ]
+    },
+    "D": {
+      "sign": "D",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl angle",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 45
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl angle",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 120,
+          "max": 260
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl angle",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 2,
+          "min": 120,
+          "max": 260
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl angle",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 2,
+          "min": 115,
+          "max": 260
+        },
+        {
+          "id": "thumb_middle_spacing",
+          "feature": "dist_thumb_middle",
+          "finger": "thumb",
+          "secondaryFinger": "middle",
+          "label": "thumb-middle spacing",
+          "feedbackKeyBelow": "thumb_middle_apart",
+          "feedbackKeyAbove": "thumb_middle_closer",
+          "priority": 1,
+          "min": 0,
+          "max": 0.25
+        },
+        {
+          "id": "thumb_index_spacing",
+          "feature": "dist_thumb_index",
+          "finger": "thumb",
+          "secondaryFinger": "index",
+          "label": "thumb-index spacing",
+          "feedbackKeyBelow": "thumb_index_apart",
+          "feedbackKeyAbove": "thumb_index_closer",
+          "priority": 2,
+          "min": 0.5,
+          "max": 2
+        }
+      ]
+    },
+    "F": {
+      "sign": "F",
+      "status": "provisional",
+      "derivedFromDataset": "canonical_fixtures",
+      "checkedAgainstDataset": null,
+      "sampleCount": 1,
+      "conditions": [
+        {
+          "id": "thumb_index_spacing",
+          "feature": "dist_thumb_index",
+          "finger": "thumb",
+          "secondaryFinger": "index",
+          "label": "thumb-index spacing",
+          "feedbackKeyBelow": "thumb_index_apart",
+          "feedbackKeyAbove": "thumb_index_closer",
+          "priority": 1,
+          "min": 0,
+          "max": 0.22
+        },
+        {
+          "id": "index_curl",
+          "feature": "curl_index_deg",
+          "finger": "index",
+          "label": "index curl angle",
+          "feedbackKeyBelow": "index_curl_more",
+          "feedbackKeyAbove": "index_extend_more",
+          "priority": 1,
+          "min": 90,
+          "max": 200
+        },
+        {
+          "id": "middle_curl",
+          "feature": "curl_middle_deg",
+          "finger": "middle",
+          "label": "middle curl angle",
+          "feedbackKeyBelow": "middle_curl_more",
+          "feedbackKeyAbove": "middle_extend_more",
+          "priority": 1,
+          "min": 0,
+          "max": 50
+        },
+        {
+          "id": "ring_curl",
+          "feature": "curl_ring_deg",
+          "finger": "ring",
+          "label": "ring curl angle",
+          "feedbackKeyBelow": "ring_curl_more",
+          "feedbackKeyAbove": "ring_extend_more",
+          "priority": 2,
+          "min": 0,
+          "max": 50
+        },
+        {
+          "id": "pinky_curl",
+          "feature": "curl_pinky_deg",
+          "finger": "pinky",
+          "label": "pinky curl angle",
+          "feedbackKeyBelow": "pinky_curl_more",
+          "feedbackKeyAbove": "pinky_extend_more",
+          "priority": 2,
+          "min": 0,
+          "max": 50
+        }
+      ]
     }
   }
 }

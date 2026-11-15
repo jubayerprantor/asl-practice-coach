@@ -45,4 +45,24 @@ describe('Curriculum & Reference Verification', () => {
       expect(threshold.conditions.length).toBeGreaterThanOrEqual(5);
     }
   });
+
+  it('lesson 2 contains curved and loop signs with human-authored descriptions', () => {
+    const lesson2 = curriculum.lessons[1];
+    expect(lesson2.id).toBe('lesson-2');
+    expect(lesson2.signs).toEqual(['C', 'O', 'D', 'F']);
+
+    for (const sign of lesson2.signs) {
+      const entry = reference.signs[sign];
+      expect(entry, `Reference for sign ${sign} must exist`).toBeDefined();
+      expect(entry.authoredByHuman).toBe(true);
+      expect(entry.summary.length).toBeGreaterThan(15);
+      expect(entry.orientationNote.length).toBeGreaterThan(10);
+      expect(entry.canonicalLandmarks).toHaveLength(21);
+
+      const threshold = thresholds.signs[sign];
+      expect(threshold, `Thresholds for sign ${sign} must exist`).toBeDefined();
+      expect(threshold.status).toBe('provisional');
+      expect(threshold.conditions.length).toBeGreaterThanOrEqual(5);
+    }
+  });
 });

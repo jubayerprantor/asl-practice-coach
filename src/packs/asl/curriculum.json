@@ -5,19 +5,37 @@
     {
       "id": "lesson-1",
       "title": "Lesson 1: Distinct Anchor Handshapes",
-      "signs": ["A", "B", "L", "V", "Y"],
+      "signs": [
+        "A",
+        "B",
+        "L",
+        "V",
+        "Y"
+      ],
       "requiredSuccessfulHolds": 2
     },
     {
       "id": "lesson-2",
       "title": "Lesson 2: Curved & Open Shapes",
-      "signs": ["C", "O", "D", "F", "I", "W"],
+      "signs": [
+        "C",
+        "O",
+        "D",
+        "F"
+      ],
       "requiredSuccessfulHolds": 2
     },
     {
       "id": "lesson-3",
       "title": "Lesson 3: Spacing & Orientation Pairs",
-      "signs": ["U", "R", "K", "G", "H", "X"],
+      "signs": [
+        "U",
+        "R",
+        "K",
+        "G",
+        "H",
+        "X"
+      ],
       "requiredSuccessfulHolds": 2
     }
   ]
