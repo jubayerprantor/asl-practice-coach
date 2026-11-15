@@ -70,7 +70,7 @@ export function AppHeader({
         boxSizing: 'border-box',
       }}
     >
-      {/* Wordmark (Section 12: Clicked navigates to home/mode picker) */}
+      {/* Wordmark & Brand Symbol (Section 12: Clicked navigates to home/mode picker) */}
       <button
         type="button"
         onClick={onWordmarkClick}
@@ -80,12 +80,27 @@ export function AppHeader({
           border: 'none',
           padding: 0,
           cursor: onWordmarkClick ? 'pointer' : 'default',
-          fontFamily: tokens.typography.fontFamily,
-          ...tokens.typography.wordmark,
-          color: tokens.colors.ink,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
         }}
       >
-        ASL Practice Coach
+        <img
+          src="/branding/symbol-color.svg"
+          alt=""
+          width={28}
+          height={28}
+          style={{ display: 'block', flexShrink: 0 }}
+        />
+        <span
+          style={{
+            fontFamily: tokens.typography.fontFamily,
+            ...tokens.typography.wordmark,
+            color: tokens.colors.ink,
+          }}
+        >
+          ASL Practice Coach
+        </span>
       </button>
 
       {/* Mode Tabs (hidden on mobile, rendered in bottom bar instead) */}
