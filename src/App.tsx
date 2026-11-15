@@ -7,6 +7,7 @@ import {
 import { CheckMode } from './ui/CheckMode';
 import { LearnMode } from './ui/LearnMode';
 import { ProgressDashboard } from './ui/ProgressDashboard';
+import { LandmarkRecorder } from './recorder/LandmarkRecorder';
 import { SyntheticOverlayPreview } from './ui/SyntheticOverlayPreview';
 
 const kbdStyle: React.CSSProperties = {
@@ -24,7 +25,14 @@ export default function App() {
   const [activePackId, setActivePackId] = useState<string>(
     availablePacks[0]?.id ?? 'asl'
   );
-  const [mode, setMode] = useState<'learn' | 'check' | 'progress'>('learn');
+  const initialMode =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('recorder') === '1'
+      ? 'recorder'
+      : 'learn';
+  const [mode, setMode] = useState<
+    'learn' | 'check' | 'progress' | 'recorder'
+  >(initialMode);
 
   const loadedPack = useMemo(
     () => getLanguagePack(activePackId),
@@ -148,6 +156,15 @@ export default function App() {
               >
                 Progress &amp; Adaptive
               </button>
+              <button
+                type="button"
+                onClick={() => setMode('recorder')}
+                aria-pressed={mode === 'recorder'}
+                title="Test Recorder (Landmarks-Only Research)"
+                style={navBtnStyle(mode === 'recorder')}
+              >
+                Test Recorder
+              </button>
             </nav>
           </div>
         </div>
@@ -201,6 +218,8 @@ export default function App() {
           feedbackPack={loadedPack.feedback}
         />
       )}
+
+      {mode === 'recorder' && <LandmarkRecorder />}
 
       {showSyntheticPreview && <SyntheticOverlayPreview />}
     </main>

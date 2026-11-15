@@ -1,0 +1,6 @@
+dataset,label,total_samples,evaluable_samples,unable_to_evaluate_count,unable_to_evaluate_rate_pct,correct_count,recognition_accuracy_overall_pct,recognition_accuracy_evaluable_pct,false_correction_count,false_correction_rate_pct
+real-human-clean,A,30,30,0,0.00,30,100.00,100.00,0,0.00
+real-human-clean,B,30,30,0,0.00,30,100.00,100.00,0,0.00
+real-human-clean,L,30,30,0,0.00,30,100.00,100.00,0,0.00
+real-human-clean,V,30,30,0,0.00,30,100.00,100.00,0,0.00
+real-human-clean,Y,30,30,0,0.00,30,100.00,100.00,0,0.00

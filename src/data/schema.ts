@@ -14,6 +14,10 @@ export interface LandmarkSample {
   handedness: HandednessLabel;
   confidence: number;
   landmarks: Point3D[]; // Length 21
+  /** Optional tag used only in Step 15 real-human testing for deliberate error trials */
+  intendedError?: string | null;
+  /** Optional clip ID grouping 30 frames from a single recorded hold */
+  clipId?: string;
 }
 
 export interface ProcessedDatasetFile {

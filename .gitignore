@@ -3,4 +3,5 @@ dist
 .DS_Store
 *.local
 /data-raw
-/data/processed
+/data
+signframe-ai-main/

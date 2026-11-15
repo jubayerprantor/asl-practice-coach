@@ -19,6 +19,7 @@ interface CliOptions {
   heldOutSubjects: Set<string> | null;
   allowTrainDatasetWithSubjectSplit: boolean;
   reportDir: string;
+  realHumanFile: string | null;
 }
 
 interface PerLetterEvalRow {
@@ -74,10 +75,11 @@ function parseArgs(argv: string[]): CliOptions {
   const defaultHeldOut =
     available.find((slug) => slug !== derivedFrom) ?? available[0];
   const datasetSlug = args.get('dataset') ?? defaultHeldOut;
+  const realHumanFile = args.get('real-human-file') ?? null;
 
-  if (!datasetSlug) {
+  if (!datasetSlug && !realHumanFile) {
     console.error(
-      'Usage: npm run eval:harness -- --dataset <heldOutSlug> [--held-out-subjects s1,s2]'
+      'Usage: npm run eval:harness -- [--dataset <heldOutSlug>] [--held-out-subjects s1,s2] [--real-human-file <path>]'
     );
     process.exit(1);
   }
@@ -93,10 +95,11 @@ function parseArgs(argv: string[]): CliOptions {
     : null;
 
   return {
-    datasetSlug,
+    datasetSlug: datasetSlug ?? '',
     heldOutSubjects,
     allowTrainDatasetWithSubjectSplit: Boolean(heldOutSubjects),
     reportDir: path.resolve('docs', 'reports'),
+    realHumanFile: realHumanFile ? path.resolve(realHumanFile) : null,
   };
 }
 
@@ -434,9 +437,112 @@ function writeSyntheticCsv(
   fs.writeFileSync(csvPath, [header, ...lines].join('\n') + '\n', 'utf-8');
 }
 
+/**
+ * Evaluates exported Step 15 real-human landmark clips separately from public datasets.
+ * Splits clean target samples (intendedError == null) from deliberate-mistake samples (intendedError != null).
+ */
+function evaluateRealHumanFile(
+  realHumanJsonPath: string,
+  pack: SignPackBundle,
+  reportDir: string
+): void {
+  const raw = JSON.parse(
+    fs.readFileSync(realHumanJsonPath, 'utf-8')
+  ) as ProcessedDatasetFile;
+
+  const cleanSamples = raw.samples.filter((s) => !s.intendedError);
+  const deliberateErrorSamples = raw.samples.filter((s) =>
+    Boolean(s.intendedError)
+  );
+
+  // 1. Evaluate clean human samples (recognition accuracy, abstention rate, false-correction rate)
+  const cleanRows = evaluateHeldOutPublicData(
+    'real-human-clean',
+    cleanSamples,
+    pack
+  );
+
+  // 2. Evaluate deliberate-mistake human samples (how often the coach catches real human errors)
+  let errorTotal = 0;
+  let errorUnable = 0;
+  let errorCaught = 0;
+  let errorMissed = 0;
+
+  for (const sample of deliberateErrorSamples) {
+    errorTotal++;
+    const handedness: AnatomicalHandedness =
+      sample.handedness === 'Left' ? 'Left' : 'Right';
+    const res = evaluate(sample.landmarks, sample.label, pack, {
+      handedness,
+      mediaPipeScore: sample.confidence,
+    });
+
+    if (res.status === 'unable_to_evaluate') {
+      errorUnable++;
+    } else if (res.status === 'needs_correction') {
+      errorCaught++;
+    } else {
+      errorMissed++;
+    }
+  }
+
+  const cleanCsvPath = path.join(reportDir, 'eval-real-human-clean.csv');
+  writePublicCsv(cleanCsvPath, cleanRows);
+
+  const mdPath = path.join(reportDir, 'evaluation-real-human.md');
+  const totClean = cleanRows.reduce((a, b) => a + b.totalSamples, 0);
+  const evalClean = cleanRows.reduce((a, b) => a + b.evaluableSamples, 0);
+  const corrClean = cleanRows.reduce((a, b) => a + b.correctCount, 0);
+  const falseCorrClean = cleanRows.reduce(
+    (a, b) => a + b.falseCorrectionCount,
+    0
+  );
+
+  const lines = [
+    '# Step 15: Real-Human Testing Evaluation Report (Separated from Public & Synthetic Data)',
+    '',
+    `Generated: ${new Date().toISOString()}`,
+    `Source File: \`${realHumanJsonPath}\``,
+    '',
+    '## 1. Clean Target Attempts (Human Participants)',
+    `- **Total Frames:** ${totClean}`,
+    `- **Evaluable Frames:** ${evalClean}`,
+    `- **Recognition Accuracy (Evaluable):** **${
+      evalClean > 0 ? ((corrClean / evalClean) * 100).toFixed(2) : '0.00'
+    }%**`,
+    `- **False-Correction Rate:** **${
+      totClean > 0 ? ((falseCorrClean / totClean) * 100).toFixed(2) : '0.00'
+    }%**`,
+    '',
+    '## 2. Deliberate-Mistake Attempts (Human Participants)',
+    `- **Total Deliberate-Error Frames:** ${errorTotal}`,
+    `- **Flagged \`needs_correction\`:** **${
+      errorTotal > 0 ? ((errorCaught / errorTotal) * 100).toFixed(2) : '0.00'
+    }%** (${errorCaught}/${errorTotal})`,
+    `- **Abstained (\`unable_to_evaluate\`):** ${errorUnable}`,
+    `- **Missed (Wrongly Marked Correct):** ${errorMissed}`,
+    '',
+  ];
+
+  fs.writeFileSync(mdPath, lines.join('\n'), 'utf-8');
+  console.log(`\n[evaluate] Real-human report written to: ${mdPath}`);
+  console.log(`[evaluate] Real-human clean CSV written to: ${cleanCsvPath}`);
+}
+
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const pack = loadPackBundle();
+
+  fs.mkdirSync(opts.reportDir, { recursive: true });
+
+  if (opts.realHumanFile) {
+    console.log(
+      `[evaluate] Running real-human evaluation on "${opts.realHumanFile}"...`
+    );
+    evaluateRealHumanFile(opts.realHumanFile, pack, opts.reportDir);
+    return;
+  }
+
   const heldOutSamples = loadHeldOutSamples(opts, pack);
 
   console.log(
