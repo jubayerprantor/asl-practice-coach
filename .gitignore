@@ -1,7 +1,37 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+
+# Production and packaging builds
+dist/
+release/
+dist-electron/
+dist-package/
+*.exe
+*.blockmap
+*.zip
+
+# Scratch files and intermediate artifacts
+scratch/
+coverage/
+
+# OS and Editor files
 .DS_Store
+Thumbs.db
 *.local
+.idea/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Datasets / Large archives
 /data-raw
 /data
 signframe-ai-main/
