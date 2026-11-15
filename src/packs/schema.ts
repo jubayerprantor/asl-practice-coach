@@ -1,6 +1,6 @@
 import type { FeatureName } from '../engine/features';
 import type { FingerName } from '../engine/types';
-import type { UnableToEvaluateReason } from '../engine/evaluateTypes';
+import type { EvaluatorConfig, UnableToEvaluateReason } from '../engine/evaluateTypes';
 
 export type ThresholdStatus = 'provisional' | 'validated';
 
@@ -92,4 +92,22 @@ export interface CurriculumPackFile {
   schemaVersion: '1.0.0';
   language: string;
   lessons: CurriculumLesson[];
+}
+
+export interface LanguagePackManifest {
+  schemaVersion: '1.0.0';
+  id: string; // e.g., "asl"
+  displayName: string; // e.g., "American Sign Language (ASL)"
+  region: string; // e.g., "United States & Canada"
+  reviewedByFluentSigner: boolean;
+  reviewerNotes?: string;
+}
+
+export interface LoadedLanguagePack {
+  manifest: LanguagePackManifest;
+  thresholds: ThresholdsPackFile;
+  reference: ReferencePackFile;
+  feedback: FeedbackPackFile;
+  curriculum: CurriculumPackFile;
+  evaluatorConfig: EvaluatorConfig;
 }

@@ -1,29 +1,13 @@
-import { useEffect, useState } from 'react';
-import thresholdsJson from './packs/asl/thresholds.json';
-import evaluatorConfigJson from './packs/asl/evaluator-config.json';
-import feedbackJson from './packs/asl/feedback.json';
-import referenceJson from './packs/asl/reference.json';
-import curriculumJson from './packs/asl/curriculum.json';
-import type { EvaluatorConfig, SignPackBundle } from './engine';
-import type {
-  CurriculumPackFile,
-  FeedbackPackFile,
-  ReferencePackFile,
-  ThresholdsPackFile,
-} from './packs/schema';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  getLanguagePack,
+  listAvailableLanguagePacks,
+  toSignPackBundle,
+} from './packs/packRegistry';
 import { CheckMode } from './ui/CheckMode';
 import { LearnMode } from './ui/LearnMode';
 import { ProgressDashboard } from './ui/ProgressDashboard';
 import { SyntheticOverlayPreview } from './ui/SyntheticOverlayPreview';
-
-const ASL_PACK: SignPackBundle = {
-  thresholds: thresholdsJson as ThresholdsPackFile,
-  config: evaluatorConfigJson as EvaluatorConfig,
-};
-
-const FEEDBACK_PACK = feedbackJson as FeedbackPackFile;
-const REFERENCE_PACK = referenceJson as ReferencePackFile;
-const CURRICULUM_PACK = curriculumJson as CurriculumPackFile;
 
 const kbdStyle: React.CSSProperties = {
   backgroundColor: '#f1f5f9',
@@ -36,7 +20,20 @@ const kbdStyle: React.CSSProperties = {
 };
 
 export default function App() {
+  const availablePacks = useMemo(() => listAvailableLanguagePacks(), []);
+  const [activePackId, setActivePackId] = useState<string>(
+    availablePacks[0]?.id ?? 'asl'
+  );
   const [mode, setMode] = useState<'learn' | 'check' | 'progress'>('learn');
+
+  const loadedPack = useMemo(
+    () => getLanguagePack(activePackId),
+    [activePackId]
+  );
+  const signPackBundle = useMemo(
+    () => toSignPackBundle(loadedPack),
+    [loadedPack]
+  );
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -83,66 +80,76 @@ export default function App() {
         >
           <div>
             <h1 style={{ margin: 0, fontSize: '1.5rem' }}>
-              ASL Fingerspelling Practice Coach
+              Fingerspelling Practice Coach
             </h1>
             <p style={{ margin: '0.25rem 0 0', color: '#475569', fontSize: '0.88rem' }}>
               100% local processing — webcam video never leaves your device.
             </p>
           </div>
 
-          <nav aria-label="Practice modes" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => setMode('learn')}
-              aria-pressed={mode === 'learn'}
-              title="Learn Mode (Alt+1)"
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {/* Runtime Language Pack Selector */}
+            <label
               style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: '1px solid #0284c7',
-                backgroundColor: mode === 'learn' ? '#0284c7' : '#ffffff',
-                color: mode === 'learn' ? '#ffffff' : '#0284c7',
-                fontWeight: 700,
-                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: '0.88rem',
+                fontWeight: 600,
+                color: '#334155',
               }}
             >
-              Learn Mode
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('check')}
-              aria-pressed={mode === 'check'}
-              title="Check Mode (Alt+2)"
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: '1px solid #0284c7',
-                backgroundColor: mode === 'check' ? '#0284c7' : '#ffffff',
-                color: mode === 'check' ? '#ffffff' : '#0284c7',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Check Mode
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('progress')}
-              aria-pressed={mode === 'progress'}
-              title="Progress & Adaptive Mode (Alt+3)"
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: '1px solid #0284c7',
-                backgroundColor: mode === 'progress' ? '#0284c7' : '#ffffff',
-                color: mode === 'progress' ? '#ffffff' : '#0284c7',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Progress &amp; Adaptive
-            </button>
-          </nav>
+              <span>Language Pack:</span>
+              <select
+                value={loadedPack.manifest.id}
+                onChange={(e) => setActivePackId(e.target.value)}
+                aria-label="Select sign language pack"
+                style={{
+                  padding: '0.4rem 0.65rem',
+                  borderRadius: '6px',
+                  border: '1px solid #94a3b8',
+                  backgroundColor: '#ffffff',
+                  fontWeight: 600,
+                }}
+              >
+                {availablePacks.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.displayName}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <nav aria-label="Practice modes" style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setMode('learn')}
+                aria-pressed={mode === 'learn'}
+                title="Learn Mode (Alt+1)"
+                style={navBtnStyle(mode === 'learn')}
+              >
+                Learn
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('check')}
+                aria-pressed={mode === 'check'}
+                title="Check Mode (Alt+2)"
+                style={navBtnStyle(mode === 'check')}
+              >
+                Check
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('progress')}
+                aria-pressed={mode === 'progress'}
+                title="Progress & Adaptive Mode (Alt+3)"
+                style={navBtnStyle(mode === 'progress')}
+              >
+                Progress &amp; Adaptive
+              </button>
+            </nav>
+          </div>
         </div>
 
         {/* Documented Keyboard Shortcuts Bar */}
@@ -170,29 +177,44 @@ export default function App() {
 
       {mode === 'learn' && (
         <LearnMode
-          pack={ASL_PACK}
-          feedbackPack={FEEDBACK_PACK}
-          referencePack={REFERENCE_PACK}
-          curriculumPack={CURRICULUM_PACK}
+          key={`learn-${loadedPack.manifest.id}`}
+          pack={signPackBundle}
+          feedbackPack={loadedPack.feedback}
+          referencePack={loadedPack.reference}
+          curriculumPack={loadedPack.curriculum}
         />
       )}
 
       {mode === 'check' && (
         <CheckMode
-          pack={ASL_PACK}
-          feedbackPack={FEEDBACK_PACK}
-          referencePack={REFERENCE_PACK}
+          key={`check-${loadedPack.manifest.id}`}
+          pack={signPackBundle}
+          feedbackPack={loadedPack.feedback}
+          referencePack={loadedPack.reference}
         />
       )}
 
       {mode === 'progress' && (
         <ProgressDashboard
-          pack={ASL_PACK}
-          feedbackPack={FEEDBACK_PACK}
+          key={`progress-${loadedPack.manifest.id}`}
+          pack={signPackBundle}
+          feedbackPack={loadedPack.feedback}
         />
       )}
 
       {showSyntheticPreview && <SyntheticOverlayPreview />}
     </main>
   );
+}
+
+function navBtnStyle(active: boolean): React.CSSProperties {
+  return {
+    padding: '0.5rem 0.95rem',
+    borderRadius: '6px',
+    border: '1px solid #0284c7',
+    backgroundColor: active ? '#0284c7' : '#ffffff',
+    color: active ? '#ffffff' : '#0284c7',
+    fontWeight: 700,
+    cursor: 'pointer',
+  };
 }

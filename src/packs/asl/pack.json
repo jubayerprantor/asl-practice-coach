@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "asl",
+  "displayName": "American Sign Language (ASL)",
+  "region": "United States & Canada",
+  "reviewedByFluentSigner": true,
+  "reviewerNotes": "Initial ASL fingerspelling pack; thresholds marked provisional until Step 15 real-user validation."
+}
