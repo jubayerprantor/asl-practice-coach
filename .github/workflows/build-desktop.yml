@@ -36,6 +36,9 @@ jobs:
       - name: Run Web Verification Pipeline
         run: npm run verify:web
 
+      - name: Install Cloud Desktop Packaging Tools
+        run: npm install --no-save electron electron-builder
+
       - name: Package Desktop Installer (with distScan check)
         run: npm run build:desktop
 
