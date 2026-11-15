@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { SignEvaluatorSession } from '../src/engine';
 import { toSignPackBundle, getLanguagePack } from '../src/packs/packRegistry';
@@ -92,8 +92,9 @@ describe('Mock Replay Evaluation Snapshot Parity', () => {
       };
     }
 
+    // Strictly frozen snapshot: NEVER regenerate. If results differ, report the failure.
     if (!existsSync(SNAPSHOT_PATH)) {
-      writeFileSync(SNAPSHOT_PATH, JSON.stringify(results, null, 2), 'utf8');
+      throw new Error(`Evaluation snapshot missing at ${SNAPSHOT_PATH}. It must not be regenerated.`);
     }
 
     const storedSnapshot = JSON.parse(readFileSync(SNAPSHOT_PATH, 'utf8'));

@@ -20,7 +20,7 @@ import type { AppMode } from './ui/components/ModeTabs';
 import type { CameraDeviceInfo } from './ui/components/CameraMenu';
 
 const DevMockBridge = import.meta.env.DEV
-  ? React.lazy(() => import('./dev/DevMockBridge').then((m) => ({ default: m.DevMockBridge })))
+  ? React.lazy(() => import(/* @vite-ignore */ './dev/DevMockBridge').then((m) => ({ default: m.DevMockBridge })))
   : () => null;
 
 export default function App() {
