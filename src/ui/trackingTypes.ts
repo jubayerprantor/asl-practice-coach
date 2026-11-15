@@ -1,4 +1,4 @@
-import type { NormalizedLandmark } from '@mediapipe/tasks-vision';
+import type { Vec3 } from '../engine';
 
 export type CameraPermissionState =
   | 'idle'
@@ -8,8 +8,8 @@ export type CameraPermissionState =
   | 'error';
 
 export interface LatestHandFrame {
-  landmarks: NormalizedLandmark[] | null;
-  worldLandmarks: NormalizedLandmark[] | null;
+  landmarks: Vec3[] | null;
+  worldLandmarks: Vec3[] | null;
   /** Raw MediaPipe handedness ('Left' | 'Right') before mirror correction */
   rawHandedness: 'Left' | 'Right' | null;
   /** Anatomical handedness accounting for mirrored webcam feed */

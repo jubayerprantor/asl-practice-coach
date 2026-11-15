@@ -6,7 +6,8 @@ import {
   type Vec3,
 } from '../engine';
 import type { LandmarkSample } from '../data/schema';
-import { CameraView } from '../ui/CameraView';
+import { cameraService } from '../services/camera';
+import { handTrackingService } from '../services/handTracking';
 import type { LatestHandFrame } from '../ui/trackingTypes';
 import {
   buildRealHumanDatasetExport,
@@ -37,6 +38,7 @@ export function LandmarkRecorder() {
   );
   const [clips, setClips] = useState<RecordedClipRecord[]>([]);
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const frameRef = useRef<LatestHandFrame>({
     landmarks: null,
     worldLandmarks: null,
@@ -49,6 +51,45 @@ export function LandmarkRecorder() {
   const bufferRef = useRef<LandmarkSample[]>([]);
   const prevNormRef = useRef<Vec3[] | null>(null);
   const lastSeenTimestampRef = useRef<number>(0);
+
+  // Subscribe to singleton CameraService and HandTrackingService
+  useEffect(() => {
+    let active = true;
+    cameraService.start().catch(() => {});
+    handTrackingService.start();
+
+    const unsubStream = cameraService.subscribeStream((stream) => {
+      if (!active) return;
+      if (videoRef.current && videoRef.current.srcObject !== stream) {
+        videoRef.current.srcObject = stream;
+        if (stream) {
+          videoRef.current.play().catch(() => {});
+        }
+      }
+    });
+
+    const unsubLandmarks = handTrackingService.subscribe((frame) => {
+      if (!active) return;
+      frameRef.current = {
+        landmarks: frame.landmarks ? [...frame.landmarks] : null,
+        worldLandmarks: frame.worldLandmarks ? [...frame.worldLandmarks] : null,
+        rawHandedness: frame.handedness === 'Right' ? 'Left' : frame.handedness === 'Left' ? 'Right' : null,
+        anatomicalHandedness: frame.handedness ?? null,
+        score: frame.confidence ?? 0,
+        timestampMs: frame.timestampMs ?? performance.now(),
+      };
+    });
+
+    return () => {
+      active = false;
+      unsubStream();
+      unsubLandmarks();
+      handTrackingService.stop();
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
+  }, []);
 
   const refreshClips = useCallback(async () => {
     try {
@@ -349,7 +390,31 @@ export function LandmarkRecorder() {
       </div>
 
       {/* Live Camera Feed */}
-      <CameraView externalFrameRef={frameRef} />
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '640px',
+          aspectRatio: '4 / 3',
+          backgroundColor: '#16181A',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transform: 'scaleX(-1)',
+          }}
+        />
+      </div>
 
       {/* Recorded Clips Summary & JSON Export */}
       <div
