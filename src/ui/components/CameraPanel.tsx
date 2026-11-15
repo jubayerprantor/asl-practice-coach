@@ -31,6 +31,7 @@ interface CameraPanelProps {
   selectedCameraId?: string | null;
   landmarkSource?: LandmarkSource | null;
   isCameraDisconnected?: boolean;
+  holdMs?: number;
   onEvaluationChange?: (result: EvaluationResult) => void;
   onTrackingStatusChange?: (status: TrackingStatus) => void;
   onCameraDisconnected?: () => void;
@@ -79,6 +80,7 @@ export function CameraPanel({
   selectedCameraId = null,
   landmarkSource = handTrackingService,
   isCameraDisconnected = false,
+  holdMs,
   onEvaluationChange,
   onTrackingStatusChange,
   onCameraDisconnected,
@@ -88,7 +90,11 @@ export function CameraPanel({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const smootherRef = useRef<HandLandmarkSmoother>(new HandLandmarkSmoother());
-  const evaluatorRef = useRef<SignEvaluatorSession>(new SignEvaluatorSession());
+  const evaluatorRef = useRef<SignEvaluatorSession>(new SignEvaluatorSession(holdMs));
+
+  useEffect(() => {
+    evaluatorRef.current.setRequiredHoldMs(holdMs);
+  }, [holdMs]);
   const lastEmittedEvalRef = useRef<EvaluationResult | null>(null);
   const lastEvalEmitTimeRef = useRef<number>(0);
 

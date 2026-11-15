@@ -15,6 +15,31 @@ import {
   FIXTURE_LETTER_O_RIGHT,
   FIXTURE_LETTER_D_RIGHT,
   FIXTURE_LETTER_F_RIGHT,
+  FIXTURE_LETTER_U_RIGHT,
+  FIXTURE_LETTER_I_RIGHT,
+  FIXTURE_LETTER_W_RIGHT,
+  FIXTURE_LETTER_S_RIGHT,
+  FIXTURE_LETTER_R_RIGHT,
+  FIXTURE_LETTER_K_RIGHT,
+  FIXTURE_LETTER_X_RIGHT,
+  FIXTURE_LETTER_E_RIGHT,
+  FIXTURE_LETTER_G_RIGHT,
+  FIXTURE_LETTER_H_RIGHT,
+  FIXTURE_LETTER_P_RIGHT,
+  FIXTURE_LETTER_Q_RIGHT,
+  FIXTURE_LETTER_T_RIGHT,
+  FIXTURE_LETTER_N_RIGHT,
+  FIXTURE_LETTER_M_RIGHT,
+  FIXTURE_DIGIT_0_RIGHT,
+  FIXTURE_DIGIT_1_RIGHT,
+  FIXTURE_DIGIT_2_RIGHT,
+  FIXTURE_DIGIT_3_RIGHT,
+  FIXTURE_DIGIT_4_RIGHT,
+  FIXTURE_DIGIT_5_RIGHT,
+  FIXTURE_DIGIT_6_RIGHT,
+  FIXTURE_DIGIT_7_RIGHT,
+  FIXTURE_DIGIT_8_RIGHT,
+  FIXTURE_DIGIT_9_RIGHT,
 } from './fixtures/handFixtures';
 import { getLanguagePack, toSignPackBundle } from '../src/packs/packRegistry';
 import { perturbFingerCurl, perturbFingertipSpacing } from './synthetic';
@@ -334,5 +359,145 @@ describe('Evaluation Engine (/src/engine/evaluate.ts)', () => {
     expect(
       closedOForC.conditions.find((c) => c.ruleId === 'thumb_index_spacing')?.passed
     ).toBe(false);
+  });
+
+  it('correctly evaluates canonical fixtures for Lesson 3 signs (U, I, W, S)', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    const resU = evaluate(FIXTURE_LETTER_U_RIGHT, 'U', prodPack);
+    expect(resU.status).toBe('correct');
+    expect(resU.topIssue).toBeNull();
+
+    const resI = evaluate(FIXTURE_LETTER_I_RIGHT, 'I', prodPack);
+    expect(resI.status).toBe('correct');
+    expect(resI.topIssue).toBeNull();
+
+    const resW = evaluate(FIXTURE_LETTER_W_RIGHT, 'W', prodPack);
+    expect(resW.status).toBe('correct');
+    expect(resW.topIssue).toBeNull();
+
+    const resS = evaluate(FIXTURE_LETTER_S_RIGHT, 'S', prodPack);
+    expect(resS.status).toBe('correct');
+    expect(resS.topIssue).toBeNull();
+  });
+
+  it('distinguishes between parallel U and spread V', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    // Showing V when target is U: fingers are spread apart instead of touching
+    const spreadVForU = evaluate(FIXTURE_LETTER_V_RIGHT, 'U', prodPack);
+    expect(spreadVForU.status).toBe('needs_correction');
+    expect(spreadVForU.topIssue?.ruleId).toBe('index_middle_spacing');
+    expect(spreadVForU.topIssue?.feedbackKey).toBe('index_middle_closer');
+
+    // Showing U when target is V: fingers are touching instead of spread apart
+    const parallelUForV = evaluate(FIXTURE_LETTER_U_RIGHT, 'V', prodPack);
+    expect(parallelUForV.status).toBe('needs_correction');
+    expect(parallelUForV.topIssue?.ruleId).toBe('index_middle_spread');
+    expect(parallelUForV.topIssue?.feedbackKey).toBe('index_middle_spread_more');
+  });
+
+  it('correctly evaluates canonical fixtures for Lesson 4 signs (R, K, X, E)', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    const resR = evaluate(FIXTURE_LETTER_R_RIGHT, 'R', prodPack);
+    expect(resR.status).toBe('correct');
+    expect(resR.topIssue).toBeNull();
+
+    const resK = evaluate(FIXTURE_LETTER_K_RIGHT, 'K', prodPack);
+    expect(resK.status).toBe('correct');
+    expect(resK.topIssue).toBeNull();
+
+    const resX = evaluate(FIXTURE_LETTER_X_RIGHT, 'X', prodPack);
+    expect(resX.status).toBe('correct');
+    expect(resX.topIssue).toBeNull();
+
+    const resE = evaluate(FIXTURE_LETTER_E_RIGHT, 'E', prodPack);
+    expect(resE.status).toBe('correct');
+    expect(resE.topIssue).toBeNull();
+  });
+
+  it('correctly evaluates canonical fixtures for Lesson 5 signs (G, H, P, Q)', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    const resG = evaluate(FIXTURE_LETTER_G_RIGHT, 'G', prodPack);
+    expect(resG.status).toBe('correct');
+    expect(resG.topIssue).toBeNull();
+
+    const resH = evaluate(FIXTURE_LETTER_H_RIGHT, 'H', prodPack);
+    expect(resH.status).toBe('correct');
+    expect(resH.topIssue).toBeNull();
+
+    const resP = evaluate(FIXTURE_LETTER_P_RIGHT, 'P', prodPack);
+    expect(resP.status).toBe('correct');
+    expect(resP.topIssue).toBeNull();
+
+    const resQ = evaluate(FIXTURE_LETTER_Q_RIGHT, 'Q', prodPack);
+    expect(resQ.status).toBe('correct');
+    expect(resQ.topIssue).toBeNull();
+  });
+
+  it('correctly evaluates canonical fixtures for Lesson 6 signs (T, N, M)', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    const resT = evaluate(FIXTURE_LETTER_T_RIGHT, 'T', prodPack);
+    expect(resT.status).toBe('correct');
+    expect(resT.topIssue).toBeNull();
+
+    const resN = evaluate(FIXTURE_LETTER_N_RIGHT, 'N', prodPack);
+    expect(resN.status).toBe('correct');
+    expect(resN.topIssue).toBeNull();
+
+    const resM = evaluate(FIXTURE_LETTER_M_RIGHT, 'M', prodPack);
+    expect(resM.status).toBe('correct');
+    expect(resM.topIssue).toBeNull();
+  });
+
+  it('correctly evaluates canonical fixtures for Lesson 7 numbers (1, 2, 3, 4, 5)', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    const res1 = evaluate(FIXTURE_DIGIT_1_RIGHT, '1', prodPack);
+    expect(res1.status).toBe('correct');
+    expect(res1.topIssue).toBeNull();
+
+    const res2 = evaluate(FIXTURE_DIGIT_2_RIGHT, '2', prodPack);
+    expect(res2.status).toBe('correct');
+    expect(res2.topIssue).toBeNull();
+
+    const res3 = evaluate(FIXTURE_DIGIT_3_RIGHT, '3', prodPack);
+    expect(res3.status).toBe('correct');
+    expect(res3.topIssue).toBeNull();
+
+    const res4 = evaluate(FIXTURE_DIGIT_4_RIGHT, '4', prodPack);
+    expect(res4.status).toBe('correct');
+    expect(res4.topIssue).toBeNull();
+
+    const res5 = evaluate(FIXTURE_DIGIT_5_RIGHT, '5', prodPack);
+    expect(res5.status).toBe('correct');
+    expect(res5.topIssue).toBeNull();
+  });
+
+  it('correctly evaluates canonical fixtures for Lesson 8 numbers (6, 7, 8, 9, 0)', () => {
+    const prodPack = toSignPackBundle(getLanguagePack('asl'));
+
+    const res6 = evaluate(FIXTURE_DIGIT_6_RIGHT, '6', prodPack);
+    expect(res6.status).toBe('correct');
+    expect(res6.topIssue).toBeNull();
+
+    const res7 = evaluate(FIXTURE_DIGIT_7_RIGHT, '7', prodPack);
+    expect(res7.status).toBe('correct');
+    expect(res7.topIssue).toBeNull();
+
+    const res8 = evaluate(FIXTURE_DIGIT_8_RIGHT, '8', prodPack);
+    expect(res8.status).toBe('correct');
+    expect(res8.topIssue).toBeNull();
+
+    const res9 = evaluate(FIXTURE_DIGIT_9_RIGHT, '9', prodPack);
+    expect(res9.status).toBe('correct');
+    expect(res9.topIssue).toBeNull();
+
+    const res0 = evaluate(FIXTURE_DIGIT_0_RIGHT, '0', prodPack);
+    expect(res0.status).toBe('correct');
+    expect(res0.topIssue).toBeNull();
   });
 });

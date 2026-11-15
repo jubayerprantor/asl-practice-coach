@@ -7,6 +7,10 @@ if (import.meta.env.DEV) {
   import('./dev/diagnostics').then(({ initDiagnostics }) => {
     initDiagnostics();
   });
+} else if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

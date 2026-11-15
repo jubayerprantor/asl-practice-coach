@@ -3,7 +3,7 @@ import type { Vec3 } from '../engine/types';
 import referencePack from '../packs/asl/reference.json';
 import { perturbFingerCurl } from '../../tests/synthetic';
 
-export type MockSign = 'A' | 'B' | 'L' | 'V' | 'Y';
+export type MockSign = string;
 
 export type MockScenario =
   | 'correct'

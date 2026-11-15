@@ -65,4 +65,124 @@ describe('Curriculum & Reference Verification', () => {
       expect(threshold.conditions.length).toBeGreaterThanOrEqual(5);
     }
   });
+
+  it('lesson 3 contains spacing and parallel extension signs with human-authored descriptions', () => {
+    const lesson3 = curriculum.lessons[2];
+    expect(lesson3.id).toBe('lesson-3');
+    expect(lesson3.signs).toEqual(['U', 'I', 'W', 'S']);
+
+    for (const sign of lesson3.signs) {
+      const entry = reference.signs[sign];
+      expect(entry, `Reference for sign ${sign} must exist`).toBeDefined();
+      expect(entry.authoredByHuman).toBe(true);
+      expect(entry.summary.length).toBeGreaterThan(15);
+      expect(entry.orientationNote.length).toBeGreaterThan(10);
+      expect(entry.canonicalLandmarks).toHaveLength(21);
+
+      const threshold = thresholds.signs[sign];
+      expect(threshold, `Thresholds for sign ${sign} must exist`).toBeDefined();
+      expect(threshold.status).toBe('provisional');
+      expect(threshold.conditions.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('lesson 4 contains crossed, hooked and knuckle shapes with human-authored descriptions', () => {
+    const lesson4 = curriculum.lessons[3];
+    expect(lesson4.id).toBe('lesson-4');
+    expect(lesson4.signs).toEqual(['R', 'K', 'X', 'E']);
+
+    for (const sign of lesson4.signs) {
+      const entry = reference.signs[sign];
+      expect(entry, `Reference for sign ${sign} must exist`).toBeDefined();
+      expect(entry.authoredByHuman).toBe(true);
+      expect(entry.summary.length).toBeGreaterThan(15);
+      expect(entry.orientationNote.length).toBeGreaterThan(10);
+      expect(entry.canonicalLandmarks).toHaveLength(21);
+
+      const threshold = thresholds.signs[sign];
+      expect(threshold, `Thresholds for sign ${sign} must exist`).toBeDefined();
+      expect(threshold.status).toBe('provisional');
+      expect(threshold.conditions.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('lesson 5 contains directional and orientation signs with human-authored descriptions', () => {
+    const lesson5 = curriculum.lessons[4];
+    expect(lesson5.id).toBe('lesson-5');
+    expect(lesson5.signs).toEqual(['G', 'H', 'P', 'Q']);
+
+    for (const sign of lesson5.signs) {
+      const entry = reference.signs[sign];
+      expect(entry, `Reference for sign ${sign} must exist`).toBeDefined();
+      expect(entry.authoredByHuman).toBe(true);
+      expect(entry.summary.length).toBeGreaterThan(15);
+      expect(entry.orientationNote.length).toBeGreaterThan(10);
+      expect(entry.canonicalLandmarks).toHaveLength(21);
+
+      const threshold = thresholds.signs[sign];
+      expect(threshold, `Thresholds for sign ${sign} must exist`).toBeDefined();
+      expect(threshold.status).toBe('provisional');
+      expect(threshold.conditions.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('lesson 6 contains tucked thumb fist signs with human-authored descriptions', () => {
+    const lesson6 = curriculum.lessons[5];
+    expect(lesson6.id).toBe('lesson-6');
+    expect(lesson6.signs).toEqual(['T', 'N', 'M']);
+
+    for (const sign of lesson6.signs) {
+      const entry = reference.signs[sign];
+      expect(entry, `Reference for sign ${sign} must exist`).toBeDefined();
+      expect(entry.authoredByHuman).toBe(true);
+      expect(entry.summary.length).toBeGreaterThan(15);
+      expect(entry.orientationNote.length).toBeGreaterThan(10);
+      expect(entry.canonicalLandmarks).toHaveLength(21);
+
+      const threshold = thresholds.signs[sign];
+      expect(threshold, `Thresholds for sign ${sign} must exist`).toBeDefined();
+      expect(threshold.status).toBe('provisional');
+      expect(threshold.conditions.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('lesson 7 contains numbers 1 to 5 with human-authored descriptions', () => {
+    const lesson7 = curriculum.lessons[6];
+    expect(lesson7.id).toBe('lesson-7');
+    expect(lesson7.signs).toEqual(['1', '2', '3', '4', '5']);
+
+    for (const sign of lesson7.signs) {
+      const entry = reference.signs[sign];
+      expect(entry, `Reference for sign ${sign} must exist`).toBeDefined();
+      expect(entry.authoredByHuman).toBe(true);
+      expect(entry.summary.length).toBeGreaterThan(15);
+      expect(entry.orientationNote.length).toBeGreaterThan(10);
+      expect(entry.canonicalLandmarks).toHaveLength(21);
+
+      const threshold = thresholds.signs[sign];
+      expect(threshold, `Thresholds for sign ${sign} must exist`).toBeDefined();
+      expect(threshold.status).toBe('provisional');
+      expect(threshold.conditions.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('lesson 8 contains numbers 6 to 9 and 0 with human-authored descriptions', () => {
+    const lesson8 = curriculum.lessons[7];
+    expect(lesson8.id).toBe('lesson-8');
+    expect(lesson8.signs).toEqual(['6', '7', '8', '9', '0']);
+
+    for (const sign of lesson8.signs) {
+      const entry = reference.signs[sign];
+      expect(entry, `Reference for sign ${sign} must exist`).toBeDefined();
+      expect(entry.authoredByHuman).toBe(true);
+      expect(entry.summary.length).toBeGreaterThan(15);
+      expect(entry.orientationNote.length).toBeGreaterThan(10);
+      expect(entry.canonicalLandmarks).toHaveLength(21);
+
+      const threshold = thresholds.signs[sign];
+      expect(threshold, `Thresholds for sign ${sign} must exist`).toBeDefined();
+      expect(threshold.status).toBe('provisional');
+      expect(threshold.conditions.length).toBeGreaterThanOrEqual(4);
+    }
+  });
 });

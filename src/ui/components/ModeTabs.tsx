@@ -1,6 +1,6 @@
 import { tokens } from '../tokens';
 
-export type AppMode = 'check' | 'learn' | 'progress' | 'home';
+export type AppMode = 'check' | 'learn' | 'words' | 'progress' | 'home';
 
 interface ModeTabsProps {
   mode: AppMode;
@@ -9,13 +9,14 @@ interface ModeTabsProps {
 
 export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
   const tabs: ReadonlyArray<{
-    id: 'check' | 'learn' | 'progress';
+    id: 'check' | 'learn' | 'words' | 'progress';
     label: string;
     shortcut: string;
   }> = [
     { id: 'check', label: 'Check', shortcut: 'Ctrl+1' },
     { id: 'learn', label: 'Learn', shortcut: 'Ctrl+2' },
-    { id: 'progress', label: 'Progress', shortcut: 'Ctrl+3' },
+    { id: 'words', label: 'Words', shortcut: 'Ctrl+3' },
+    { id: 'progress', label: 'Progress', shortcut: 'Ctrl+4' },
   ];
 
   return (

@@ -61,6 +61,7 @@ jobs:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v0.1.0' }}
           draft: false
           prerelease: false
+          body_path: docs/release-notes-v0.1.0.md
           generate_release_notes: true
           files: |
             release/*.exe

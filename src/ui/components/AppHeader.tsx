@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { tokens } from '../tokens';
-import { CameraIcon, MuteIcon, VolumeIcon } from '../icons';
+import { CameraIcon, MuteIcon, SettingsIcon, VolumeIcon } from '../icons';
 import { ModeTabs, type AppMode } from './ModeTabs';
 import { CameraMenu, type CameraDeviceInfo } from './CameraMenu';
 
@@ -19,6 +19,9 @@ interface AppHeaderProps {
   onWordmarkClick?: () => void;
   isMobile?: boolean;
   isTablet?: boolean;
+  streakCount?: number;
+  onOpenSettings?: () => void;
+  settingsButtonRef?: React.Ref<HTMLButtonElement>;
 }
 
 export function AppHeader({
@@ -36,6 +39,9 @@ export function AppHeader({
   onWordmarkClick,
   isMobile = false,
   isTablet = false,
+  streakCount,
+  onOpenSettings,
+  settingsButtonRef,
 }: AppHeaderProps) {
   const touchHeight = isMobile || isTablet ? tokens.shape.mobileTouchTarget : tokens.shape.buttonHeight;
   const [internalMenuOpen, setInternalMenuOpen] = useState<boolean>(false);
@@ -189,6 +195,59 @@ export function AppHeader({
             />
           )}
         </div>
+
+        {/* Streak Counter Badge */}
+        {streakCount !== undefined && (
+          <div
+            role="status"
+            aria-label={`Current practice streak: ${streakCount} day${streakCount === 1 ? '' : 's'}`}
+            title={`Current practice streak: ${streakCount} day${streakCount === 1 ? '' : 's'}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: isMobile ? '0 8px' : '0 10px',
+              height: touchHeight,
+              borderRadius: tokens.shape.radiusControl,
+              backgroundColor: tokens.colors.chipNeutral,
+              border: `${tokens.shape.borderWidth} solid ${tokens.colors.border}`,
+              fontSize: tokens.typography.statusText.fontSize,
+              fontWeight: 600,
+              color: streakCount > 0 ? '#E65100' : tokens.colors.mutedText,
+              userSelect: 'none',
+            }}
+          >
+            <span aria-hidden="true">🔥</span>
+            <span>{streakCount}</span>
+          </div>
+        )}
+
+        {/* Settings Dialog Trigger Button */}
+        {onOpenSettings && (
+          <button
+            ref={settingsButtonRef}
+            type="button"
+            onClick={onOpenSettings}
+            aria-label="Settings"
+            title="Settings"
+            className="btn-outlined"
+            style={{
+              height: touchHeight,
+              minWidth: isMobile ? touchHeight : undefined,
+              borderRadius: tokens.shape.radiusControl,
+              padding: isMobile ? '0' : '0 12px',
+              fontSize: tokens.typography.statusText.fontSize,
+              fontWeight: 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            <SettingsIcon size={isMobile ? 18 : 16} color={tokens.colors.ink} />
+            {!isMobile && <span>Settings</span>}
+          </button>
+        )}
       </div>
     </header>
   );

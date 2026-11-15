@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { tokens } from '../tokens';
+import { resolveHintFeedback } from '../hintUtils';
 import { CameraPanel } from '../components/CameraPanel';
 import { LessonPath, type LessonSignStatus } from '../components/LessonPath';
 import { TargetSign } from '../components/TargetSign';
@@ -44,6 +45,7 @@ interface LearnScreenProps {
   onChooseCamera?: () => void;
   cameraChangedNotice?: string | null;
   onCameraDisconnected?: () => void;
+  holdMs?: number;
 }
 
 export function LearnScreen({
@@ -77,27 +79,16 @@ export function LearnScreen({
   onChooseCamera,
   cameraChangedNotice = null,
   onCameraDisconnected,
+  holdMs,
 }: LearnScreenProps) {
   const [mobileSheetOpen, setMobileSheetOpen] = useState<boolean>(false);
 
   const isTouch = isMobile || isTablet;
 
-  // Derive single instruction for HintCard when needs_correction
-  let hintMessage = 'Adjust hand to match target.';
-  const feedbackKey = evaluation?.topIssue?.feedbackKey ?? null;
-  if (evaluation?.status === 'needs_correction') {
-    if (feedbackKey && feedbackPack?.messages[feedbackKey]) {
-      hintMessage = feedbackPack.messages[feedbackKey];
-    } else if (evaluation.topIssue) {
-      const finger = evaluation.topIssue.finger;
-      const fingerLabel = finger === 'pinky' ? 'little' : finger;
-      if (evaluation.topIssue.margin > 0) {
-        hintMessage = `Curl your ${fingerLabel} finger down more.`;
-      } else {
-        hintMessage = `Straighten your ${fingerLabel} finger up more.`;
-      }
-    }
-  }
+  const { feedbackKey, hintMessage } = resolveHintFeedback(
+    evaluation,
+    feedbackPack ?? ({ messages: {}, unableReasons: {} } as any)
+  );
 
   const isUnableToEvaluate =
     evaluation === null || evaluation.status === 'unable_to_evaluate';
@@ -141,6 +132,7 @@ export function LearnScreen({
             selectedCameraId={selectedCameraId}
             landmarkSource={landmarkSource}
             isCameraDisconnected={isCameraDisconnected}
+            holdMs={holdMs}
             onEvaluationChange={onEvaluationChange}
             onCameraDisconnected={onCameraDisconnected}
             onToggleCamera={onToggleCamera}

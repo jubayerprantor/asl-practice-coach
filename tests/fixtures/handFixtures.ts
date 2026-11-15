@@ -1,4 +1,5 @@
 import type { Vec3 } from '../../src/engine';
+import referenceJson from '../../src/packs/asl/reference.json';
 
 /**
  * Processed dataset-schema fixture: Open hand / Letter 'B' pose (Right hand)
@@ -167,3 +168,57 @@ export const FIXTURE_LETTER_F_RIGHT: Vec3[] = [
   { x: 0.589, y: 0.485, z: -0.017 },
   { x: 0.591, y: 0.420, z: -0.019 },
 ];
+
+export const FIXTURE_LETTER_U_RIGHT: Vec3[] = referenceJson.signs.U.canonicalLandmarks;
+export const FIXTURE_LETTER_I_RIGHT: Vec3[] = referenceJson.signs.I.canonicalLandmarks;
+export const FIXTURE_LETTER_W_RIGHT: Vec3[] = referenceJson.signs.W.canonicalLandmarks;
+export const FIXTURE_LETTER_S_RIGHT: Vec3[] = referenceJson.signs.S.canonicalLandmarks;
+export const FIXTURE_LETTER_R_RIGHT: Vec3[] = referenceJson.signs.R.canonicalLandmarks;
+export const FIXTURE_LETTER_K_RIGHT: Vec3[] = referenceJson.signs.K.canonicalLandmarks;
+export const FIXTURE_LETTER_X_RIGHT: Vec3[] = referenceJson.signs.X.canonicalLandmarks;
+export const FIXTURE_LETTER_E_RIGHT: Vec3[] = referenceJson.signs.E.canonicalLandmarks;
+export const FIXTURE_LETTER_G_RIGHT: Vec3[] = referenceJson.signs.G.canonicalLandmarks;
+export const FIXTURE_LETTER_H_RIGHT: Vec3[] = referenceJson.signs.H.canonicalLandmarks;
+export const FIXTURE_LETTER_P_RIGHT: Vec3[] = referenceJson.signs.P.canonicalLandmarks;
+export const FIXTURE_LETTER_Q_RIGHT: Vec3[] = referenceJson.signs.Q.canonicalLandmarks;
+export const FIXTURE_LETTER_T_RIGHT: Vec3[] = referenceJson.signs.T.canonicalLandmarks;
+export const FIXTURE_LETTER_N_RIGHT: Vec3[] = referenceJson.signs.N.canonicalLandmarks;
+export const FIXTURE_LETTER_M_RIGHT: Vec3[] = referenceJson.signs.M.canonicalLandmarks;
+
+export const FIXTURE_DIGIT_0_RIGHT: Vec3[] = referenceJson.signs['0'].canonicalLandmarks;
+export const FIXTURE_DIGIT_1_RIGHT: Vec3[] = referenceJson.signs['1'].canonicalLandmarks;
+export const FIXTURE_DIGIT_2_RIGHT: Vec3[] = referenceJson.signs['2'].canonicalLandmarks;
+export const FIXTURE_DIGIT_3_RIGHT: Vec3[] = referenceJson.signs['3'].canonicalLandmarks;
+export const FIXTURE_DIGIT_4_RIGHT: Vec3[] = referenceJson.signs['4'].canonicalLandmarks;
+export const FIXTURE_DIGIT_5_RIGHT: Vec3[] = referenceJson.signs['5'].canonicalLandmarks;
+export const FIXTURE_DIGIT_6_RIGHT: Vec3[] = referenceJson.signs['6'].canonicalLandmarks;
+export const FIXTURE_DIGIT_7_RIGHT: Vec3[] = referenceJson.signs['7'].canonicalLandmarks;
+export const FIXTURE_DIGIT_8_RIGHT: Vec3[] = referenceJson.signs['8'].canonicalLandmarks;
+export const FIXTURE_DIGIT_9_RIGHT: Vec3[] = referenceJson.signs['9'].canonicalLandmarks;
+
+export const ALL_STATIC_LETTER_FIXTURES: Record<string, Vec3[]> = {
+  A: referenceJson.signs.A.canonicalLandmarks,
+  B: referenceJson.signs.B.canonicalLandmarks,
+  C: referenceJson.signs.C.canonicalLandmarks,
+  D: referenceJson.signs.D.canonicalLandmarks,
+  E: referenceJson.signs.E.canonicalLandmarks,
+  F: referenceJson.signs.F.canonicalLandmarks,
+  G: referenceJson.signs.G.canonicalLandmarks,
+  H: referenceJson.signs.H.canonicalLandmarks,
+  I: referenceJson.signs.I.canonicalLandmarks,
+  K: referenceJson.signs.K.canonicalLandmarks,
+  L: referenceJson.signs.L.canonicalLandmarks,
+  M: referenceJson.signs.M.canonicalLandmarks,
+  N: referenceJson.signs.N.canonicalLandmarks,
+  O: referenceJson.signs.O.canonicalLandmarks,
+  P: referenceJson.signs.P.canonicalLandmarks,
+  Q: referenceJson.signs.Q.canonicalLandmarks,
+  R: referenceJson.signs.R.canonicalLandmarks,
+  S: referenceJson.signs.S.canonicalLandmarks,
+  T: referenceJson.signs.T.canonicalLandmarks,
+  U: referenceJson.signs.U.canonicalLandmarks,
+  V: referenceJson.signs.V.canonicalLandmarks,
+  W: referenceJson.signs.W.canonicalLandmarks,
+  X: referenceJson.signs.X.canonicalLandmarks,
+  Y: referenceJson.signs.Y.canonicalLandmarks,
+};

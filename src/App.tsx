@@ -12,9 +12,30 @@ import { HomeScreen } from './ui/screens/Home';
 import { ProgressScreen } from './ui/screens/Progress';
 import { LearnScreen } from './ui/screens/Learn';
 import { CheckScreen } from './ui/screens/Check';
+import { WordsScreen } from './ui/screens/Words';
+import {
+  PRACTICE_WORDS,
+  createInitialWordState,
+  advanceWordState,
+  nextWordState,
+  type WordPracticeState,
+} from './services/wordPractice';
 import { DebouncedSpeechCoach } from './ui/speechCoach';
 import { handleHoldCompletion } from './ui/practiceHandler';
 import { handTrackingService } from './services/handTracking';
+import {
+  loadUserPreferences,
+  saveUserPreferences,
+  loadStreakData,
+  recordHoldCompletion,
+  DIFFICULTY_CONFIG,
+  FONT_SCALE_MAP,
+  type DifficultyTier,
+  type FontScale,
+  type StreakData,
+  type UserPreferences,
+} from './services/userPreferences';
+import { SettingsDialog } from './ui/components/SettingsDialog';
 import type { EvaluationResult, FingerName, LandmarkSource } from './engine';
 import type { LessonSignStatus } from './ui/components/LessonPath';
 import type { AppMode } from './ui/components/ModeTabs';
@@ -72,6 +93,40 @@ export default function App() {
   const [voiceEnabled, setVoiceEnabled] = useState<boolean>(false);
   const [cameraEnabled, setCameraEnabled] = useState<boolean>(true);
   const [showReference, setShowReference] = useState<boolean>(false);
+
+  // User Preferences & Accessibility (Phase 3)
+  const [preferences, setPreferences] = useState<UserPreferences>(() =>
+    loadUserPreferences()
+  );
+  const [streak, setStreak] = useState<StreakData>(() => loadStreakData());
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const settingsBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  const activeHoldMs = DIFFICULTY_CONFIG[preferences.difficulty].holdMs;
+
+  const handleDifficultyChange = useCallback((tier: DifficultyTier) => {
+    setPreferences((prev) => {
+      const next = { ...prev, difficulty: tier };
+      saveUserPreferences(next);
+      return next;
+    });
+  }, []);
+
+  const handleHighContrastChange = useCallback((enabled: boolean) => {
+    setPreferences((prev) => {
+      const next = { ...prev, highContrast: enabled };
+      saveUserPreferences(next);
+      return next;
+    });
+  }, []);
+
+  const handleFontScaleChange = useCallback((scale: FontScale) => {
+    setPreferences((prev) => {
+      const next = { ...prev, fontScale: scale };
+      saveUserPreferences(next);
+      return next;
+    });
+  }, []);
 
   // Section 25: Camera picker & device state
   const [cameras, setCameras] = useState<CameraDeviceInfo[]>([]);
@@ -186,13 +241,32 @@ export default function App() {
   );
   const [checkSignIdx, setCheckSignIdx] = useState<number>(0);
 
+  // Word Practice Mode State
+  const [wordState, setWordState] = useState<WordPracticeState>(() =>
+    createInitialWordState()
+  );
+  const currentWordItem =
+    PRACTICE_WORDS[wordState.wordIndex] ?? PRACTICE_WORDS[0];
+  const activeWordLetter =
+    currentWordItem.word[wordState.letterIndex] ?? 'C';
+
   // Target sign derived from active mode
   const currentTargetSign = useMemo(() => {
     if (mode === 'learn') {
       return currentLesson?.signs[lessonSignIdx] ?? 'A';
     }
+    if (mode === 'words') {
+      return activeWordLetter;
+    }
     return availableSigns[checkSignIdx] ?? 'A';
-  }, [mode, currentLesson, lessonSignIdx, availableSigns, checkSignIdx]);
+  }, [
+    mode,
+    currentLesson,
+    lessonSignIdx,
+    activeWordLetter,
+    availableSigns,
+    checkSignIdx,
+  ]);
 
   // Next sign in current lesson or next lesson
   const nextSign = useMemo(() => {
@@ -276,6 +350,10 @@ export default function App() {
     } else if (!holdAlreadyHandledRef.current) {
       holdAlreadyHandledRef.current = true;
 
+      // Update daily practice streak
+      const updatedStreak = recordHoldCompletion();
+      setStreak(updatedStreak);
+
       const completion = handleHoldCompletion({
         isMockActive,
         mode: mode === 'learn' ? 'learn' : 'check',
@@ -296,6 +374,12 @@ export default function App() {
           // Section 9: Enter Lesson complete view
           setIsLessonComplete(true);
         }
+      } else if (mode === 'words') {
+        // Advance letter in word
+        setWordState((prev) => advanceWordState(prev));
+        holdAlreadyHandledRef.current = false;
+        attemptStartTimeRef.current = performance.now();
+        fingerMistakesRef.current = {};
       } else {
         // Check mode: quiet 500ms pause before advancing to next sign
         if (checkAdvanceTimerRef.current) {
@@ -395,6 +479,9 @@ export default function App() {
           setMode('learn');
         } else if (e.key === '3') {
           e.preventDefault();
+          setMode('words');
+        } else if (e.key === '4') {
+          e.preventDefault();
           setMode('progress');
         }
       } else {
@@ -476,11 +563,13 @@ export default function App() {
 
   return (
     <div
+      data-high-contrast={preferences.highContrast ? 'true' : undefined}
       style={{
         minHeight: '100vh',
         backgroundColor: tokens.colors.ground,
         color: tokens.colors.ink,
         fontFamily: tokens.typography.fontFamily,
+        fontSize: `${FONT_SCALE_MAP[preferences.fontScale] * 100}%`,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -520,6 +609,9 @@ export default function App() {
         onWordmarkClick={() => setMode('home')}
         isMobile={isMobile}
         isTablet={isTablet}
+        streakCount={streak.currentStreak}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        settingsButtonRef={settingsBtnRef}
       />
 
       {/* Main Content Area */}
@@ -561,6 +653,7 @@ export default function App() {
           /* Section 12: Home Screen / Mode Picker */
           <HomeScreen
             onSelectLearn={() => setMode('learn')}
+            onSelectWords={() => setMode('words')}
             onSelectCheck={() => setMode('check')}
             inProgressLesson={
               currentLesson
@@ -581,6 +674,45 @@ export default function App() {
             onStartLearn={() => setMode('learn')}
             onPracticeSign={handleOpenCheckOnSign}
             isTouch={isTouch}
+          />
+        ) : mode === 'words' ? (
+          /* Words Fingerspelling Screen */
+          <WordsScreen
+            cameraEnabled={cameraEnabled}
+            onToggleCamera={() => setCameraEnabled(true)}
+            currentTargetSign={currentTargetSign}
+            pack={signPackBundle}
+            referenceEntry={referenceEntry}
+            feedbackPack={loadedPack.feedback}
+            evaluation={evaluation}
+            onEvaluationChange={setEvaluation}
+            showReference={showReference}
+            onToggleReference={() => setShowReference((r) => !r)}
+            isMobile={isMobile}
+            isTablet={isTablet}
+            selectedCameraId={selectedCameraId}
+            landmarkSource={activeLandmarkSource}
+            isCameraDisconnected={isCameraDisconnected}
+            onChooseCamera={handleChooseCamera}
+            cameraChangedNotice={cameraChangedNotice}
+            onCameraDisconnected={handleCameraDisconnected}
+            holdMs={activeHoldMs}
+            currentWord={currentWordItem.word}
+            currentLetterIndex={wordState.letterIndex}
+            isWordComplete={wordState.isWordComplete}
+            category={currentWordItem.category}
+            hint={currentWordItem.hint}
+            onNextWord={() => setWordState((prev) => nextWordState(prev))}
+            onSelectWord={(idx) =>
+              setWordState({
+                wordIndex: idx,
+                letterIndex: 0,
+                isWordComplete: false,
+                completedWordsCount: wordState.completedWordsCount,
+              })
+            }
+            wordIndex={wordState.wordIndex}
+            words={PRACTICE_WORDS}
           />
         ) : mode === 'check' ? (
           /* Check Screen */
@@ -605,6 +737,7 @@ export default function App() {
             onCameraDisconnected={handleCameraDisconnected}
             availableSigns={availableSigns}
             onSelectSign={handleSelectCheckSign}
+            holdMs={activeHoldMs}
           />
         ) : (
           /* Learn Screen */
@@ -639,6 +772,7 @@ export default function App() {
             onChooseCamera={handleChooseCamera}
             cameraChangedNotice={cameraChangedNotice}
             onCameraDisconnected={handleCameraDisconnected}
+            holdMs={activeHoldMs}
           />
         )}
       </main>
@@ -661,6 +795,20 @@ export default function App() {
       {isMobile && hasCompletedSetup && !isCameraBlocked && (
         <MobileBottomNav mode={mode} onModeChange={(next) => setMode(next)} />
       )}
+
+      {/* Settings & Accessibility Modal Dialog */}
+      <SettingsDialog
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        difficulty={preferences.difficulty}
+        onDifficultyChange={handleDifficultyChange}
+        highContrast={preferences.highContrast}
+        onHighContrastChange={handleHighContrastChange}
+        fontScale={preferences.fontScale}
+        onFontScaleChange={handleFontScaleChange}
+        streak={streak}
+        triggerRef={settingsBtnRef}
+      />
 
       {/* Dev-only Mock Mode Panel (Rule 3: Gated on import.meta.env.DEV) */}
       {import.meta.env.DEV && (

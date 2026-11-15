@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { tokens } from '../tokens';
-import { BoundingBoxIcon, HandIcon, SunIcon } from '../icons';
+import { BoundingBoxIcon, ClockIcon, HandIcon, SunIcon } from '../icons';
 import type { CameraDeviceInfo } from './CameraMenu';
 import { cameraService } from '../../services/camera';
 
@@ -167,7 +167,7 @@ export function SetupCard({
         Set up your camera
       </div>
 
-      {/* Three short rows with 20px outline icons */}
+      {/* Quick Setup & Practice Guide */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ flexShrink: 0 }}>
@@ -192,7 +192,16 @@ export function SetupCard({
             <SunIcon size={20} color={tokens.colors.ink} />
           </div>
           <span style={{ ...tokens.typography.body, color: tokens.colors.ink }}>
-            Use even light on your hand
+            Use bright, even light without heavy shadows
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ flexShrink: 0 }}>
+            <ClockIcon size={20} color={tokens.colors.ink} />
+          </div>
+          <span style={{ ...tokens.typography.body, color: tokens.colors.ink }}>
+            Hold steady when green to fill the meter and complete each sign
           </span>
         </div>
       </div>

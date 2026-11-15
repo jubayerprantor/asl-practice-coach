@@ -1,65 +1,89 @@
 <p align="center">
-  <img src="public/branding/horizontal-color.svg" alt="ASL Practice Coach" width="360" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/branding/horizontal-color-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="public/branding/horizontal-color.svg">
+    <img alt="ASL Practice Coach" src="public/branding/horizontal-color.svg" width="380">
+  </picture>
 </p>
 
 <p align="center">
-  <strong>On-device, real-time American Sign Language (ASL) fingerspelling tutor with joint-level biomechanical feedback.</strong>
+  <strong>Private, on-device American Sign Language (ASL) fingerspelling and numbers coach with real-time biomechanical joint feedback.</strong>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Privacy-100%25_On--Device-5EE0C0?style=flat-square" alt="Privacy" />
-  <img src="https://img.shields.io/badge/AI_Engine-MediaPipe_Tasks_Vision-181B1E?style=flat-square" alt="MediaPipe" />
+  <img src="https://img.shields.io/badge/Target-Offline_Desktop_App-181B1E?style=flat-square" alt="Offline Desktop" />
+  <img src="https://img.shields.io/badge/Signs-34_Active_(Letters_+_Digits)-FFB020?style=flat-square" alt="34 Signs" />
+  <img src="https://img.shields.io/badge/Engine-MediaPipe_Tasks_Vision-181B1E?style=flat-square" alt="MediaPipe" />
   <img src="https://img.shields.io/badge/TypeScript-5.5-blue?style=flat-square" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square" alt="Vite" />
-  <img src="https://img.shields.io/badge/Tests-Vitest_Passing-success?style=flat-square" alt="Tests" />
-  <img src="https://img.shields.io/badge/Cloud_Packaging-GitHub_Actions-purple?style=flat-square" alt="CI/CD" />
+  <img src="https://img.shields.io/badge/Tests-59_Passing-success?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/CI%2FCD-GitHub_Actions_Desktop_Packager-purple?style=flat-square" alt="CI/CD" />
 </p>
 
 ---
 
 ## Overview
 
-**ASL Practice Coach** is an interactive, privacy-first web and desktop tutor designed to help learners master the American Sign Language fingerspelling alphabet.
+**ASL Practice Coach** is a privacy-first, on-device desktop application that helps users learn and master American Sign Language fingerspelling letters and numbers. 
 
-Unlike traditional flashcards or passive videos that offer no validation, ASL Practice Coach analyzes live webcam frames directly in the browser using on-device computer vision. It computes 21 three-dimensional skeletal hand landmarks at 30+ FPS, evaluates joint curl angles, spreads, and palm orientations against human-reviewed biomechanical thresholds, and provides immediate anatomical guidance (e.g. *"Curl index finger more"*, *"Tuck thumb across palm"*).
+Unlike video tutorials or flashcards that provide zero real-time correction, ASL Practice Coach analyzes live webcam frames on your local machine using computer vision. It computes 21 skeletal hand landmarks in 3D space at 30+ FPS, evaluates joint curl angles, finger spreads, and palm orientations against empirical biomechanical thresholds, and provides immediate, targeted anatomical guidance (e.g., *"Curl index finger more"*, *"Bring thumb closer to index finger"*).
 
-### Absolute Privacy Guarantee
-* **Zero Video Streaming**: Video frames never leave your computer.
-* **In-Memory Processing**: Landmarks are evaluated in transient browser memory and immediately discarded.
-* **100% Offline Capable**: Bundled offline MediaPipe WASM binaries, task models, and fonts allow the app to operate with the network completely disabled.
+### Absolute Privacy & Offline Security
+* **Zero Video Streaming:** Video frames are processed entirely on your local machine and are never recorded or uploaded.
+* **Transient In-Memory Evaluation:** Landmark data is computed in memory and discarded on the next frame.
+* **100% Offline Architecture:** Ships with bundled MediaPipe WASM binaries, task models, and Inter typography—the application functions with your internet connection completely disabled.
 
 ---
 
-## Key Features
+## What's Included
 
-- **21-Point Skeletal Tracking**: Captures wrist, MCP (knuckles), PIP, DIP, and fingertip coordinates in real-time.
-- **Biomechanical Rule Engine**: Evaluates finger curl angles in degrees, inter-finger spread ratios relative to palm size, and 3D palm normal vectors.
-- **Hold-to-Confirm Muscle Memory Engine**: Requires the user to hold the correct sign steadily for a configurable duration (1.2s) across multiple repetitions before marking it mastered.
-- **Color-Coded Visual Guidance**:
-  - `Mint Green (#5EE0C0)` — Correct finger position and successful hold completion.
-  - `Coaching Amber (#FFB020)` — Targeted finger requiring attention.
-  - `Neutral Slate (#8A9096)` — Resting / non-target landmarks.
-- **Curriculum & Check Modes**:
-  - **Learn Mode**: Structured progression through Lesson 1 (**A, B, L, V, Y**), complete with reference sign photos, target outlines, and mistake analytics.
-  - **Check Mode**: Rapid test and practice screen with instant sign switching chips and auto-advance review.
-  - **Progress Mode**: Tracks mastered signs and schedules reviews using Leitner spaced repetition.
-- **Optional Voice Coaching**: Non-blocking, debounced spoken instructions using the browser's Web Speech API (muted by default).
-- **Desktop Packaging via GitHub Actions**: Clean cloud CI/CD that packages standalone Windows NSIS installers without taxing local development machines.
+### 1. 34 Active Signs Across 8 Structured Lessons
+* **Full Static Alphabet (24 Signs):** `A, B, C, D, E, F, G, H, I, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y` *(J and Z are dynamic trajectory signs scheduled for Phase 6)*.
+* **Numerical Digits (10 Signs):** `0, 1, 2, 3, 4, 5, 6, 7, 8, 9`.
+* **Structured Curriculum Progression:**
+  * **Lesson 1:** Anchor Signs (`A, B, L, V, Y`)
+  * **Lesson 2:** Fist & Compact Family (`C, E, O, S`)
+  * **Lesson 3:** Index & Directional Family (`D, F, G, H, I`)
+  * **Lesson 4:** Cross & Contact Family (`K, R, U, W`)
+  * **Lesson 5:** Thumb-Tuck Family (`M, N, T, X`)
+  * **Lesson 6:** Downward & Tilt Family (`P, Q`)
+  * **Lesson 7:** Numbers 1–5 (`1, 2, 3, 4, 5`)
+  * **Lesson 8:** Numbers 6–9 & 0 (`6, 7, 8, 9, 0`)
+
+### 2. Practice Modes
+* **Learn Mode (`Ctrl+2`):** Guided lesson path with reference hand overlays, finger checklists, single-mistake hints, and post-lesson completion recaps.
+* **Check Mode (`Ctrl+1`):** Quick-reference testing screen with instant sign picker chips, real-time hold meter, and automatic advance upon confirmation.
+* **Word Practice Mode (`Ctrl+3`):** Sequential fingerspelling engine for everyday vocabulary (`CAT`, `DOG`, `SUN`, `ASL`, `BOOK`, etc.) with letter progression chips and celebration feedback.
+* **Progress Mode (`Ctrl+4`):** Curriculum mastery overview tracking completed signs and lesson progress.
+
+### 3. Personalization & Accessibility
+* **Habit Streak Tracking:** Private daily practice streak tracking stored locally on your device.
+* **Difficulty Tiers:**
+  * *Relaxed:* 1.2s hold duration (ideal for beginners and motor accessibility).
+  * *Standard:* 2.0s hold duration (balanced default practice tier).
+  * *Precision:* 3.0s hold duration (for advanced muscle-memory mastery).
+* **Accessibility Settings:** High-contrast visual mode, dynamic font scaling (100%–150%), and polite screen-reader announcements.
+* **Optional Voice Coaching (`Ctrl+Shift+V`):** Non-blocking spoken feedback using the browser/system speech engine (muted by default).
 
 ---
 
 ## Architecture & Project Structure
+
+ASL Practice Coach is designed as an **offline desktop application** wrapped in Electron, with a Vite development server used strictly as a rapid local developer harness. For detailed architecture documentation, see [**`guide.md`**](guide.md).
 
 ```text
 /
 ├── .github/workflows/       # GitHub Actions automated desktop packaging CI/CD
 ├── docs/                    # Architecture records, test protocols, branding guidelines
 │   ├── branding/            # Brand identity board & logo usage guidelines
-│   ├── reports/             # Generated evaluation summaries and accuracy benchmarks
-│   ├── desktop-build.md     # Desktop packaging instructions and CI architecture
-│   └── desktop-parity.md    # Desktop-to-web behavioral parity checklist
-├── electron/                # Privileged Electron wrapper (main.cjs, preload.cjs)
+│   ├── reports/             # Benchmark evaluations (100% Massey ASL accuracy)
+│   ├── release-notes-v0.1.0.md # Release notes for official distributions
+│   └── desktop-build.md     # Desktop packaging instructions and CI architecture
+├── electron/                # Privileged Electron wrapper (main.cjs, preload.cjs, protocol app://asl)
+├── guide.md                 # Developer & architecture guide (Dev Mode & runtime details)
+├── plan.md                  # Categorical 7-phase implementation roadmap
 ├── public/                  # Offline WASM, models, fonts, icons, and branding SVGs
+│   └── branding/            # Dual-theme SVG logos (light & dark mode variants)
 ├── scripts/                 # Ingestion, evaluation, dist inspection, and smoke tests
 ├── src/
 │   ├── engine/              # PURE geometry & evaluation logic (Zero DOM/React dependencies)
@@ -67,12 +91,12 @@ Unlike traditional flashcards or passive videos that offer no validation, ASL Pr
 │   │   ├── evaluate.ts      # Biomechanical threshold evaluation & issue isolation
 │   │   ├── synthetic.ts     # Deterministic synthetic test perturbations
 │   │   └── types.ts         # Landmark, pack, and evaluation schemas
-│   ├── packs/               # Modular language pack registry (ASL Lesson 1)
+│   ├── packs/               # Modular language pack registry (ASL Lessons 1–8)
 │   │   └── asl/             # reference.json, thresholds.json, feedback.json, curriculum.json
-│   ├── services/            # CameraService, HandTrackingService, Leitner review store
+│   ├── services/            # CameraService, HandTrackingService, WordPractice, UserPreferences
 │   ├── storage/             # IndexedDB local progress & settings wrapper
 │   └── ui/                  # React components, responsive layouts, design tokens
-└── tests/                   # 12 Vitest suites (geometry, services, frozen snapshot invariant)
+└── tests/                   # 14 Vitest suites (59 passing tests, frozen snapshot invariants)
 ```
 
 ---
@@ -81,44 +105,45 @@ Unlike traditional flashcards or passive videos that offer no validation, ASL Pr
 
 The brand identity centers on the **Muscle-Memory Loop**—a continuous line tracing an ASL gesture wrapping into a circular confirmation timer:
 
-| Token | Hex Value | Role & Meaning |
-| :--- | :--- | :--- |
-| **Slate Charcoal** | `#181B1E` | Primary ink, dark camera viewfinder, strong typography |
-| **Coaching Amber** | `#FFB020` | Hold timer arc, targeted corrective guidance, attentive feedback |
-| **Mint Passing** | `#5EE0C0` | Confirmed hold, correct sign, positive progress |
-| **Eggshell Ground**| `#F6F6F3` | Warm, non-glare application background |
-| **Borders** | `#E3E3DE` | Clean, subtle architectural dividing lines |
+| Token | Light Theme | Dark Theme | Role & Meaning |
+| :--- | :--- | :--- | :--- |
+| **Ink / Typography** | `#181B1E` | `#FFFFFF` | Primary readable text, prominent headings |
+| **Coaching Amber** | `#FFB020` | `#FFB020` | Hold timer progress, targeted corrective finger guidance |
+| **Mint Passing** | `#5EE0C0` | `#5EE0C0` | Confirmed hold completion, correct sign status |
+| **Background / Ground**| `#F6F6F3` | `#16181A` | Non-glare application background |
+| **Borders** | `#E3E3DE` | `#33373B` | Clean, subtle architectural dividing lines |
 
-Vector brand assets are organized in [`public/branding/`](file:///c:/Users/DSU/Downloads/PROGRAMMING/ASL%20Practice%20Coach/public/branding) and guidelines in [`docs/branding/`](file:///c:/Users/DSU/Downloads/PROGRAMMING/ASL%20Practice%20Coach/docs/branding):
-- `artwork/horizontal-color.svg` — Standard header lockup
-- `artwork/symbol-color.svg` — Standalone logo symbol / app mark
-- `icons/` — Complete favicon and manifest suite (`favicon.ico`, `favicon.svg`, `icon-180.png`, `icon-192.png`, `icon-512.png`)
+Dual-theme vector brand assets are maintained in [`public/branding/`](public/branding):
+* `horizontal-color.svg` — Standard header lockup (Light background)
+* `horizontal-color-dark.svg` — Header lockup (Dark background)
+* `symbol-color.svg` — Standalone logo symbol / app mark
+* `symbol-small.svg` — Compact favicon and app icon mark
 
 ---
 
 ## Quickstart & Local Development
 
 ### Prerequisites
-- **Node.js**: v20 or v22 LTS
-- **npm**: v10+
+* **Node.js:** v20 or v22 LTS
+* **npm:** v10+
 
-### Installation
+### Installation & Development
 ```bash
 # Clone the repository
 git clone https://github.com/your-username/asl-practice-coach.git
 cd asl-practice-coach
 
-# Install dependencies (fast, lightweight web dependencies only)
+# Install dependencies (fast, lightweight dev dependencies)
 npm install
-```
 
-### Running Locally
-```bash
-# Start the Vite development server
+# Start the Vite development harness
 npm run dev
 
 # Open http://localhost:5173 in your browser
 ```
+
+> [!NOTE]
+> When running under `npm run dev`, Vite activates the **Dev Mock Control Panel** at the bottom of the screen. This allows you to test hand recognition without raising your hand or plugging in a camera. See [`guide.md`](guide.md) for full Dev Mode documentation.
 
 ---
 
@@ -132,38 +157,38 @@ npm run verify:web
 
 The pipeline executes synchronously and halts on the first failure:
 
-1. **TypeScript Validation**: `tsc --noEmit` verifies strict types.
-2. **Unit & Invariant Tests**: `vitest run` executes all 12 test suites, including the frozen snapshot test (`tests/mockSnapshot.test.ts`).
-3. **Evaluation Benchmark**: `scripts/evaluate.ts` tests accuracy on the held-out public Massey ASL dataset.
-4. **Production Web Build**: `vite build` creates minified, tree-shaken artifacts.
-5. **Dist Inspection**: `scripts/inspect-dist.ts` validates that all WASM, models, and fonts exist locally in `dist/`, scans for illegal external URLs, and ensures mock code is 100% eliminated.
-6. **Headless Smoke Test**: `scripts/smoke-test.ts` spins up an offline local server, navigates headless Chrome, verifies IndexedDB initialization, and confirms zero external network calls.
+1. **TypeScript Validation:** `tsc --noEmit` verifies strict types.
+2. **Unit & Invariant Tests:** `vitest run` executes all 14 test suites (59 tests) including the frozen snapshot test (`tests/mockSnapshot.test.ts`).
+3. **Evaluation Benchmark:** `scripts/evaluate.ts` verifies 100% accuracy on the held-out public Massey ASL dataset.
+4. **Production Web Build:** `vite build` creates minified, tree-shaken artifacts.
+5. **Dist Inspection:** `scripts/inspect-dist.ts` validates that all WASM, models, and fonts exist locally in `dist/`, scans for illegal external URLs, and guarantees zero mock code in production.
+6. **Headless Smoke Test:** `scripts/smoke-test.ts` spins up an offline local server, navigates headless Chrome, verifies IndexedDB initialization, and confirms zero non-local network requests.
 
 ---
 
-## Cloud Packaging via GitHub Actions
+## Desktop Packaging via GitHub Actions
 
-To keep development machines fast and free from heavy Electron binaries and build caches, desktop packaging is automated in GitHub Actions (`.github/workflows/build-desktop.yml`).
+To keep development environments fast and free from heavy platform binaries and build caches, desktop packaging is automated in GitHub Actions ([`.github/workflows/build-desktop.yml`](.github/workflows/build-desktop.yml)).
 
-### Triggering a Cloud Build
-* **Draft Release on Tag**: Push any tag starting with `v` (e.g. `v0.1.0`):
-  ```bash
-  git tag v0.1.0
-  git push origin v0.1.0
-  ```
-* **Manual Dispatch**: Go to the **Actions** tab in GitHub, select **Build Desktop Application**, and click **Run workflow**.
+### Publishing an Official Desktop Release
+Push any tag starting with `v` (e.g. `v0.1.0`):
 
-The cloud runner runs `verify:web`, dynamically installs builder tools, produces signed/clean NSIS Windows installers, and uploads the `.exe` directly to GitHub Releases and artifacts.
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The cloud runner runs `verify:web`, installs packaging tools, produces standalone Windows NSIS installers (`.exe`), and attaches the executable directly to the GitHub Release.
 
 ---
 
 ## Core Engineering Invariants
 
-1. **Never Invent Thresholds**: All angle and distance boundaries are derived from empirical dataset statistics in `thresholds.json`.
-2. **Pure Mathematical Engine**: `/src/engine` contains zero React hooks, DOM manipulation, or webcam APIs. It receives 21 landmarks and outputs evaluation results.
-3. **Frozen Snapshot Invariant**: The test suite in `tests/mockSnapshot.test.ts` verifies evaluation stability against `tests/fixtures/evaluationSnapshot.json`, which must never be regenerated.
-4. **Text-First & Accessible**: Visual feedback pairs icons with text explanations; audio is an optional enhancement that defaults to off.
-5. **Handedness Parity**: Mirroring and observer perspectives are normalized so both physical right and left hands receive accurate feedback.
+1. **Never Hardcode Thresholds:** All geometric conditions are derived from empirical dataset statistics in `thresholds.json`.
+2. **Pure Mathematical Engine:** `/src/engine` contains zero React hooks, DOM manipulation, or webcam APIs. It receives 21 landmarks and outputs evaluation results.
+3. **Frozen Snapshot Invariant:** The test in `tests/mockSnapshot.test.ts` asserts engine stability against `tests/fixtures/evaluationSnapshot.json`, ensuring non-regressive accuracy.
+4. **Offline Isolation:** Zero runtime dependencies on external CDNs or remote APIs. All vision models and fonts are served locally.
+5. **Handedness Parity:** Mirroring and observer perspectives are normalized so both physical right and left hands receive identical feedback.
 
 ---
 

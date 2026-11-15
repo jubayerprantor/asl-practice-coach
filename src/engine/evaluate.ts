@@ -228,7 +228,11 @@ export class SignEvaluatorSession {
   private lastPassingMs: number | null = null;
   private holdCompleted = false;
 
-  constructor(private readonly requiredHoldMs?: number) {}
+  constructor(private requiredHoldMs?: number) {}
+
+  public setRequiredHoldMs(ms?: number): void {
+    this.requiredHoldMs = ms;
+  }
 
   reset(): void {
     this.prevNormalized = null;

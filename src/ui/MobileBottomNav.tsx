@@ -1,5 +1,5 @@
 import { tokens } from './tokens';
-import { BarChartIcon, BookOpenIcon, CheckSquareIcon } from './icons';
+import { BarChartIcon, BookOpenIcon, CheckSquareIcon, TypeIcon } from './icons';
 import type { AppMode } from './components/ModeTabs';
 
 interface MobileBottomNavProps {
@@ -9,11 +9,12 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ mode, onModeChange }: MobileBottomNavProps) {
   const items: ReadonlyArray<{
-    id: 'learn' | 'check' | 'progress';
+    id: 'learn' | 'words' | 'check' | 'progress';
     label: string;
     icon: typeof BookOpenIcon;
   }> = [
     { id: 'learn', label: 'Learn', icon: BookOpenIcon },
+    { id: 'words', label: 'Words', icon: TypeIcon },
     { id: 'check', label: 'Check', icon: CheckSquareIcon },
     { id: 'progress', label: 'Progress', icon: BarChartIcon },
   ];

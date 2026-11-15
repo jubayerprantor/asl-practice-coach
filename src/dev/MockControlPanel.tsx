@@ -4,6 +4,7 @@ import {
   type MockScenario,
   type MockSign,
 } from './mockLandmarkSource';
+import referencePack from '../packs/asl/reference.json';
 import { tokens } from '../ui/tokens';
 
 const SCENARIOS: ReadonlyArray<{ id: MockScenario; label: string }> = [
@@ -17,7 +18,7 @@ const SCENARIOS: ReadonlyArray<{ id: MockScenario; label: string }> = [
   { id: 'too_far', label: '8. Hand Too Far' },
 ];
 
-const SIGNS: MockSign[] = ['A', 'B', 'L', 'V', 'Y'];
+const SIGNS: MockSign[] = Object.keys(referencePack.signs).sort();
 
 interface MockControlPanelProps {
   mockSource: MockLandmarkSource;

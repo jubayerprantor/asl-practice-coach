@@ -1,8 +1,9 @@
 import { tokens } from '../tokens';
-import { BookOpenIcon, CheckSquareIcon } from '../icons';
+import { BookOpenIcon, CheckSquareIcon, TypeIcon } from '../icons';
 
 interface HomeScreenProps {
   onSelectLearn: () => void;
+  onSelectWords?: () => void;
   onSelectCheck: () => void;
   inProgressLesson?: {
     lessonNumber: number;
@@ -15,6 +16,7 @@ interface HomeScreenProps {
 
 export function HomeScreen({
   onSelectLearn,
+  onSelectWords,
   onSelectCheck,
   inProgressLesson,
   onContinueInProgress,
@@ -102,6 +104,60 @@ export function HomeScreen({
             </div>
           </div>
         </button>
+
+        {/* Words Card */}
+        {onSelectWords && (
+          <button
+            type="button"
+            onClick={onSelectWords}
+            style={{
+              backgroundColor: tokens.colors.surface,
+              border: `${tokens.shape.borderWidth} solid ${tokens.colors.border}`,
+              borderRadius: tokens.shape.radiusPanel,
+              padding: tokens.spacing.panelPadding,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '16px',
+              cursor: 'pointer',
+              textAlign: 'left',
+            }}
+          >
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: tokens.shape.radiusControl,
+                backgroundColor: tokens.colors.chipNeutral,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <TypeIcon size={28} color={tokens.colors.ink} />
+            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  color: tokens.colors.ink,
+                  marginBottom: '4px',
+                }}
+              >
+                Words
+              </div>
+              <div
+                style={{
+                  ...tokens.typography.smallMeta,
+                  color: tokens.colors.mutedText,
+                }}
+              >
+                Fingerspell real vocabulary words
+              </div>
+            </div>
+          </button>
+        )}
 
         {/* Check Card */}
         <button

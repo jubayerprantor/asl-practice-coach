@@ -243,3 +243,35 @@ button {
     forced-color-adjust: none;
   }
 }
+
+/* User-toggled High-contrast Mode (Phase 3 Accessibility) */
+[data-high-contrast="true"] {
+  --color-ground: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-border: #000000;
+  --color-border-strong: #000000;
+  --color-row-divider: #000000;
+  --color-ink: #000000;
+  --color-muted-text: #111111;
+  --color-secondary-body: #000000;
+  --color-tab-track: #EEEEEE;
+  --color-chip-neutral: #FFFFFF;
+  --color-locked-outline: #000000;
+  --color-status-card-fill: #FFFFFF;
+  --color-status-card-border: #000000;
+  --color-hint-card-fill: #FFFFD0;
+  --color-hint-card-border: #000000;
+}
+
+[data-high-contrast="true"] .btn-outlined {
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+[data-high-contrast="true"] .btn-primary {
+  border: 2px solid #000000 !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
