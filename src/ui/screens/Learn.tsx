@@ -11,7 +11,7 @@ import { HoldMeter } from '../components/HoldMeter';
 import { LessonComplete } from '../components/LessonComplete';
 import type { EvaluationResult } from '../../engine/evaluateTypes';
 import type { FeedbackPackFile, SignReferenceEntry } from '../../packs/schema';
-import type { SignPackBundle } from '../../engine';
+import type { LandmarkSource, SignPackBundle } from '../../engine';
 
 interface LearnScreenProps {
   cameraEnabled: boolean;
@@ -39,6 +39,7 @@ interface LearnScreenProps {
   isMobile: boolean;
   isTablet: boolean;
   selectedCameraId?: string | null;
+  landmarkSource?: LandmarkSource | null;
   isCameraDisconnected?: boolean;
   onChooseCamera?: () => void;
   cameraChangedNotice?: string | null;
@@ -71,6 +72,7 @@ export function LearnScreen({
   isMobile,
   isTablet,
   selectedCameraId = null,
+  landmarkSource = null,
   isCameraDisconnected = false,
   onChooseCamera,
   cameraChangedNotice = null,
@@ -137,6 +139,7 @@ export function LearnScreen({
             isMobile={isMobile}
             isTablet={isTablet}
             selectedCameraId={selectedCameraId}
+            landmarkSource={landmarkSource}
             isCameraDisconnected={isCameraDisconnected}
             onEvaluationChange={onEvaluationChange}
             onCameraDisconnected={onCameraDisconnected}

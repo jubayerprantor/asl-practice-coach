@@ -1,0 +1,280 @@
+{
+  "A": {
+    "correct": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "fingers": {
+        "thumb": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "index": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "middle": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "ring": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "pinky": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        }
+      }
+    },
+    "faultyThumb": {
+      "status": "needs_correction",
+      "unableReason": null,
+      "topIssue": {
+        "ruleId": "thumb_curl",
+        "feature": "curl_thumb_deg",
+        "finger": "thumb",
+        "passed": false,
+        "measuredValue": 78.34592629333646,
+        "min": 0,
+        "max": 65,
+        "margin": 13.345926293336461,
+        "normalizedSeverity": 0.2053219429744071,
+        "feedbackKey": "thumb_extend_more",
+        "priority": 2
+      },
+      "thumbPassed": false
+    },
+    "faultyIndex": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "indexPassed": true
+    }
+  },
+  "B": {
+    "correct": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "fingers": {
+        "thumb": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "index": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "middle": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "ring": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "pinky": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        }
+      }
+    },
+    "faultyThumb": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "thumbPassed": true
+    },
+    "faultyIndex": {
+      "status": "needs_correction",
+      "unableReason": null,
+      "topIssue": {
+        "ruleId": "index_curl",
+        "feature": "curl_index_deg",
+        "finger": "index",
+        "passed": false,
+        "measuredValue": 80.23923839916166,
+        "min": 0,
+        "max": 45,
+        "margin": 35.239238399161664,
+        "normalizedSeverity": 0.783094186648037,
+        "feedbackKey": "index_extend_more",
+        "priority": 1
+      },
+      "indexPassed": false
+    }
+  },
+  "L": {
+    "correct": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "fingers": {
+        "thumb": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "index": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "middle": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "ring": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "pinky": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        }
+      }
+    },
+    "faultyThumb": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "thumbPassed": true
+    },
+    "faultyIndex": {
+      "status": "needs_correction",
+      "unableReason": null,
+      "topIssue": {
+        "ruleId": "index_curl",
+        "feature": "curl_index_deg",
+        "finger": "index",
+        "passed": false,
+        "measuredValue": 80.23923839916166,
+        "min": 0,
+        "max": 45,
+        "margin": 35.239238399161664,
+        "normalizedSeverity": 0.783094186648037,
+        "feedbackKey": "index_extend_more",
+        "priority": 1
+      },
+      "indexPassed": false
+    }
+  },
+  "V": {
+    "correct": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "fingers": {
+        "thumb": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "index": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "middle": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "ring": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "pinky": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        }
+      }
+    },
+    "faultyThumb": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "thumbPassed": true
+    },
+    "faultyIndex": {
+      "status": "needs_correction",
+      "unableReason": null,
+      "topIssue": {
+        "ruleId": "index_curl",
+        "feature": "curl_index_deg",
+        "finger": "index",
+        "passed": false,
+        "measuredValue": 78.68950481459447,
+        "min": 0,
+        "max": 45,
+        "margin": 33.68950481459447,
+        "normalizedSeverity": 0.7486556625465438,
+        "feedbackKey": "index_extend_more",
+        "priority": 1
+      },
+      "indexPassed": false
+    }
+  },
+  "Y": {
+    "correct": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "fingers": {
+        "thumb": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "index": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "middle": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "ring": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        },
+        "pinky": {
+          "passed": true,
+          "priority": 99,
+          "feedbackKey": null
+        }
+      }
+    },
+    "faultyThumb": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "thumbPassed": true
+    },
+    "faultyIndex": {
+      "status": "correct",
+      "unableReason": null,
+      "topIssue": null,
+      "indexPassed": true
+    }
+  }
+}

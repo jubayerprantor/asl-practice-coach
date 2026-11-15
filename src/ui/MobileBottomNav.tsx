@@ -1,6 +1,6 @@
 import { tokens } from './tokens';
 import { BarChartIcon, BookOpenIcon, CheckSquareIcon } from './icons';
-import type { AppMode } from './AppHeader';
+import type { AppMode } from './components/ModeTabs';
 
 interface MobileBottomNavProps {
   mode: AppMode;

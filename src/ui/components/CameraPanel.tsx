@@ -6,6 +6,7 @@ import {
   type AnatomicalHandedness,
   type EvaluationResult,
   type FingerName,
+  type LandmarkSource,
   type SignPackBundle,
   type Vec3,
 } from '../../engine';
@@ -26,6 +27,7 @@ interface CameraPanelProps {
   isMobile?: boolean;
   isTablet?: boolean;
   selectedCameraId?: string | null;
+  landmarkSource?: LandmarkSource | null;
   isCameraDisconnected?: boolean;
   onEvaluationChange?: (result: EvaluationResult) => void;
   onTrackingStatusChange?: (status: TrackingStatus) => void;
@@ -73,6 +75,7 @@ export function CameraPanel({
   isMobile = false,
   isTablet = false,
   selectedCameraId = null,
+  landmarkSource = null,
   isCameraDisconnected = false,
   onEvaluationChange,
   onTrackingStatusChange,
@@ -115,8 +118,18 @@ export function CameraPanel({
     isPassing: false,
   });
 
-  // 1. Initialize MediaPipe HandLandmarker
+  // 1. Initialize MediaPipe HandLandmarker (bypassed if landmarkSource is provided)
   useEffect(() => {
+    if (landmarkSource) {
+      setTrackingStatus('ready');
+      onTrackingStatusChange?.('ready');
+      setHandState((prev) => ({
+        ...prev,
+        statusText: 'Mock tracking ready',
+      }));
+      return;
+    }
+
     let cancelled = false;
 
     async function init() {
@@ -168,7 +181,7 @@ export function CameraPanel({
         landmarkerRef.current = null;
       }
     };
-  }, [onTrackingStatusChange]);
+  }, [onTrackingStatusChange, landmarkSource]);
 
   // 2. Manage Webcam Stream and Inference Loop
   useEffect(() => {
@@ -198,6 +211,118 @@ export function CameraPanel({
         isPassing: false,
       });
       return;
+    }
+
+    // Dev-only Mock LandmarkSource support (Step 3)
+    if (landmarkSource) {
+      stop();
+      setHandState({
+        detected: false,
+        multipleHands: false,
+        handedness: null,
+        statusText: 'Replaying mock landmarks',
+        isPassing: false,
+      });
+
+      const unsubscribe = landmarkSource.subscribe((frame) => {
+        if (!active) return;
+        const now = frame.timestampMs ?? performance.now();
+        const canvas = canvasRef.current;
+
+        if (frame.status === 'disconnected') {
+          onCameraDisconnected?.();
+          setHandState({
+            detected: false,
+            multipleHands: false,
+            handedness: null,
+            statusText: 'Camera disconnected',
+            isPassing: false,
+          });
+          if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx?.clearRect(0, 0, canvas.width, canvas.height);
+          }
+          return;
+        }
+
+        const multipleHands = frame.status === 'two_hands';
+        const detectedLandmarks = frame.landmarks;
+        const anatomicalHand = frame.handedness ?? 'Right';
+
+        let currentEval: EvaluationResult | null = null;
+        if (targetSign && pack) {
+          const smoothed = detectedLandmarks
+            ? smootherRef.current.filter(detectedLandmarks, now)
+            : null;
+
+          if (!detectedLandmarks) {
+            smootherRef.current.reset();
+          }
+
+          currentEval = evaluatorRef.current.evaluateFrame(
+            {
+              landmarks: multipleHands ? null : smoothed,
+              handedness: anatomicalHand,
+              mediaPipeScore: frame.confidence ?? 0.95,
+              timestampMs: now,
+            },
+            targetSign,
+            pack
+          );
+
+          if (multipleHands && currentEval) {
+            currentEval = {
+              ...currentEval,
+              status: 'unable_to_evaluate',
+              unableReason: 'hand_too_close',
+            };
+          }
+
+          onEvaluationChange?.(currentEval);
+        }
+
+        let statusText = 'No hand detected';
+        if (multipleHands) {
+          statusText = 'Two hands detected';
+        } else if (frame.status === 'low_confidence') {
+          statusText = 'Low tracking confidence';
+        } else if (frame.status === 'too_far') {
+          statusText = 'Hand too far';
+        } else if (detectedLandmarks && anatomicalHand) {
+          statusText = `${anatomicalHand} hand detected`;
+        }
+
+        setHandState({
+          detected: Boolean(detectedLandmarks) && !multipleHands,
+          multipleHands,
+          handedness: anatomicalHand,
+          statusText,
+          isPassing: currentEval?.status === 'correct',
+        });
+
+        if (canvas) {
+          if (canvas.width !== 640 || canvas.height !== 480) {
+            canvas.width = 640;
+            canvas.height = 480;
+          }
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            drawOverlay(
+              ctx,
+              canvas.width,
+              canvas.height,
+              multipleHands ? null : detectedLandmarks,
+              currentEval,
+              isLessonComplete
+            );
+          }
+        }
+      });
+
+      return () => {
+        active = false;
+        unsubscribe();
+      };
     }
 
     async function start() {
@@ -402,6 +527,7 @@ export function CameraPanel({
     targetSign,
     pack,
     selectedCameraId,
+    landmarkSource,
     isCameraDisconnected,
     onEvaluationChange,
     onCameraDisconnected,

@@ -8,7 +8,7 @@ import { FingerList } from '../components/FingerList';
 import { HoldMeter } from '../components/HoldMeter';
 import type { EvaluationResult } from '../../engine/evaluateTypes';
 import type { FeedbackPackFile, SignReferenceEntry } from '../../packs/schema';
-import type { SignPackBundle } from '../../engine';
+import type { LandmarkSource, SignPackBundle } from '../../engine';
 
 interface CheckScreenProps {
   cameraEnabled: boolean;
@@ -24,6 +24,7 @@ interface CheckScreenProps {
   isMobile: boolean;
   isTablet: boolean;
   selectedCameraId?: string | null;
+  landmarkSource?: LandmarkSource | null;
   isCameraDisconnected?: boolean;
   onChooseCamera?: () => void;
   cameraChangedNotice?: string | null;
@@ -44,6 +45,7 @@ export function CheckScreen({
   isMobile,
   isTablet,
   selectedCameraId = null,
+  landmarkSource = null,
   isCameraDisconnected = false,
   onChooseCamera,
   cameraChangedNotice = null,
@@ -110,6 +112,7 @@ export function CheckScreen({
             isMobile={isMobile}
             isTablet={isTablet}
             selectedCameraId={selectedCameraId}
+            landmarkSource={landmarkSource}
             isCameraDisconnected={isCameraDisconnected}
             onEvaluationChange={onEvaluationChange}
             onCameraDisconnected={onCameraDisconnected}

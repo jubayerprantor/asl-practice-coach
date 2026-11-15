@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getLanguagePack,
   listAvailableLanguagePacks,
@@ -14,10 +14,14 @@ import { LearnScreen } from './ui/screens/Learn';
 import { CheckScreen } from './ui/screens/Check';
 import { DebouncedSpeechCoach } from './ui/speechCoach';
 import { logPracticeAttempt } from './storage/db';
-import type { EvaluationResult, FingerName } from './engine';
+import type { EvaluationResult, FingerName, LandmarkSource } from './engine';
 import type { LessonSignStatus } from './ui/components/LessonPath';
 import type { AppMode } from './ui/components/ModeTabs';
 import type { CameraDeviceInfo } from './ui/components/CameraMenu';
+
+const DevMockBridge = import.meta.env.DEV
+  ? React.lazy(() => import('./dev/DevMockBridge').then((m) => ({ default: m.DevMockBridge })))
+  : () => null;
 
 export default function App() {
   const availablePacks = useMemo(() => listAvailableLanguagePacks(), []);
@@ -77,6 +81,10 @@ export default function App() {
   const [cameraChangedNotice, setCameraChangedNotice] = useState<string | null>(null);
   const [isCameraDisconnected, setIsCameraDisconnected] = useState<boolean>(false);
   const [cameraMenuOpen, setCameraMenuOpen] = useState<boolean>(false);
+
+  // Step 3: Dev Mock Mode state
+  const [mockLandmarkSource, setMockLandmarkSource] = useState<LandmarkSource | null>(null);
+  const [isMockActive, setIsMockActive] = useState<boolean>(false);
 
   const updateCameras = useCallback(async () => {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
@@ -271,21 +279,23 @@ export default function App() {
           : topFailingFinger;
       setMostAdjustedFinger(fingerLabel);
 
-      // Log attempt to IndexedDB
-      const durationMs = Math.round(
-        performance.now() - attemptStartTimeRef.current
-      );
-      logPracticeAttempt({
-        mode: mode === 'learn' ? 'learn' : 'check',
-        language: loadedPack.manifest.id,
-        sign: currentTargetSign,
-        success: true,
-        timeToSuccessMs: durationMs,
-        durationMs,
-        mostCommonFailingFinger: topFailingFinger,
-        fingerErrorCounts: { ...fingerMistakesRef.current },
-        completedAt: new Date().toISOString(),
-      }).catch((err) => console.warn('Failed to log attempt:', err));
+      // Log attempt to IndexedDB (Rule 4: Mock results must never be saved to progress storage)
+      if (!isMockActive) {
+        const durationMs = Math.round(
+          performance.now() - attemptStartTimeRef.current
+        );
+        logPracticeAttempt({
+          mode: mode === 'learn' ? 'learn' : 'check',
+          language: loadedPack.manifest.id,
+          sign: currentTargetSign,
+          success: true,
+          timeToSuccessMs: durationMs,
+          durationMs,
+          mostCommonFailingFinger: topFailingFinger,
+          fingerErrorCounts: { ...fingerMistakesRef.current },
+          completedAt: new Date().toISOString(),
+        }).catch((err) => console.warn('Failed to log attempt:', err));
+      }
 
       if (mode === 'learn') {
         const nextHolds = completedHolds + 1;
@@ -587,6 +597,7 @@ export default function App() {
             isMobile={isMobile}
             isTablet={isTablet}
             selectedCameraId={selectedCameraId}
+            landmarkSource={mockLandmarkSource}
             isCameraDisconnected={isCameraDisconnected}
             onChooseCamera={handleChooseCamera}
             cameraChangedNotice={cameraChangedNotice}
@@ -620,6 +631,7 @@ export default function App() {
             isMobile={isMobile}
             isTablet={isTablet}
             selectedCameraId={selectedCameraId}
+            landmarkSource={mockLandmarkSource}
             isCameraDisconnected={isCameraDisconnected}
             onChooseCamera={handleChooseCamera}
             cameraChangedNotice={cameraChangedNotice}
@@ -645,6 +657,17 @@ export default function App() {
       {/* Section 13: Mobile Bottom Bar Navigation */}
       {isMobile && hasCompletedSetup && !isCameraBlocked && (
         <MobileBottomNav mode={mode} onModeChange={(next) => setMode(next)} />
+      )}
+
+      {/* Dev-only Mock Mode Panel (Rule 3: Gated on import.meta.env.DEV) */}
+      {import.meta.env.DEV && (
+        <React.Suspense fallback={null}>
+          <DevMockBridge
+            currentTargetSign={currentTargetSign}
+            onMockSourceChange={setMockLandmarkSource}
+            onMockActiveChange={setIsMockActive}
+          />
+        </React.Suspense>
       )}
     </div>
   );
