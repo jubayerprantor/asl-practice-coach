@@ -1,37 +1,83 @@
 # Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# Production and packaging builds
+# Build and production outputs
 dist/
+dist-ssr/
 release/
 dist-electron/
 dist-package/
+build/
 *.exe
 *.blockmap
 *.zip
+*.tar.gz
+*.dmg
+*.AppImage
+*.deb
+*.rpm
 
-# Scratch files and intermediate artifacts
-scratch/
+# Test and coverage artifacts
 coverage/
+*.lcov
+.nyc_output/
+.vitest/
 
-# OS and Editor files
-.DS_Store
-Thumbs.db
-*.local
-.idea/
-
-# Environment and secrets
-.env
-.env.local
-.env.*.local
-
-# Logs
+# Scratch and intermediate working files
+scratch/
+temp/
+tmp/
+*.tmp
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Datasets / Large archives
-/data-raw
-/data
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# OS artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editor and IDE configurations
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Raw datasets, archives, and bulk training media
+/data-raw/
+/data/raw/
+/data/**/*.zip
+/data/**/*.tar*
+/data/**/*.jpg
+/data/**/*.jpeg
+/data/**/*.png
+/data/**/*.mp4
+/data/**/*.webm
 signframe-ai-main/
+
+# Retain lightweight processed JSON datasets required for evaluation & tests
+!data/processed/
+!data/processed/*.json
+!data/real-human/
+!data/real-human/*.json
