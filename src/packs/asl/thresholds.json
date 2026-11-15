@@ -257,7 +257,7 @@
           "feedbackKeyBelow": "ring_curl_more",
           "feedbackKeyAbove": "ring_extend_more",
           "priority": 1,
-          "min": 140,
+          "min": 125,
           "max": 270
         },
         {
@@ -268,7 +268,7 @@
           "feedbackKeyBelow": "pinky_curl_more",
           "feedbackKeyAbove": "pinky_extend_more",
           "priority": 1,
-          "min": 140,
+          "min": 125,
           "max": 270
         },
         {
@@ -279,7 +279,7 @@
           "feedbackKeyBelow": "index_middle_spread_more",
           "feedbackKeyAbove": "index_middle_bring_together",
           "priority": 3,
-          "min": 0.45,
+          "min": 0.38,
           "max": 2.5
         }
       ]
