@@ -1,32 +1,35 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   FilesetResolver,
   HandLandmarker,
-  type HandLandmarkerResult,
 } from '@mediapipe/tasks-vision';
 import type {
   CameraPermissionState,
   LatestHandFrame,
 } from './trackingTypes';
-
-// Standard 21-point MediaPipe hand skeleton connections
-const HAND_CONNECTIONS: ReadonlyArray<[number, number]> = [
-  [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
-  [0, 5], [5, 6], [6, 7], [7, 8],       // Index
-  [5, 9], [9, 10], [10, 11], [11, 12],  // Middle
-  [9, 13], [13, 14], [14, 15], [15, 16],// Ring
-  [13, 17], [0, 17], [17, 18], [18, 19], [19, 20], // Pinky & palm base
-];
+import { drawDiagnosticHandOverlay } from './skeletonRenderer';
+import {
+  HandLandmarkSmoother,
+  SignEvaluatorSession,
+  type EvaluationResult,
+  type SignPackBundle,
+} from '../engine';
 
 interface CameraViewProps {
   /** Target inference rate in frames per second (default: 30 FPS) */
   targetFps?: number;
+  targetSign?: string;
+  pack?: SignPackBundle;
+  onEvaluationChange?: (result: EvaluationResult) => void;
   /** Optional ref exposed to parent/engine consumers without triggering re-renders */
   externalFrameRef?: React.MutableRefObject<LatestHandFrame>;
 }
 
 export function CameraView({
   targetFps = 30,
+  targetSign,
+  pack,
+  onEvaluationChange,
   externalFrameRef,
 }: CameraViewProps) {
   const [cameraEnabled, setCameraEnabled] = useState<boolean>(true);
@@ -41,6 +44,12 @@ export function CameraView({
   const landmarkerRef = useRef<HandLandmarker | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafIdRef = useRef<number | null>(null);
+
+  // Engine evaluation & smoothing refs
+  const smootherRef = useRef<HandLandmarkSmoother>(new HandLandmarkSmoother());
+  const evaluatorRef = useRef<SignEvaluatorSession>(new SignEvaluatorSession());
+  const lastEmittedEvalRef = useRef<EvaluationResult | null>(null);
+  const lastEvalEmitTimeRef = useRef<number>(0);
 
   // Per-frame detection data lives strictly in a ref (never React state)
   const internalFrameRef = useRef<LatestHandFrame>({
@@ -58,6 +67,13 @@ export function CameraView({
   const lastVideoTimeRef = useRef<number>(-1);
   const fpsWindowStartRef = useRef<number>(performance.now());
   const fpsFrameCountRef = useRef<number>(0);
+
+  // Reset evaluation state on targetSign change
+  useEffect(() => {
+    evaluatorRef.current.reset();
+    smootherRef.current.reset();
+    lastEmittedEvalRef.current = null;
+  }, [targetSign]);
 
   // 1. Initialize MediaPipe HandLandmarker once
   useEffect(() => {
@@ -106,61 +122,6 @@ export function CameraView({
     };
   }, []);
 
-  // Draw landmarks & connections onto canvas matching video intrinsic dimensions
-  const drawOverlay = useCallback((result: HandLandmarkerResult | null) => {
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    if (!canvas || !video) return;
-
-    if (
-      video.videoWidth > 0 &&
-      video.videoHeight > 0 &&
-      (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)
-    ) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-    }
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const landmarks = result?.landmarks?.[0];
-    if (!landmarks || landmarks.length === 0) return;
-
-    // Draw bone connections
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-
-    for (const [startIdx, endIdx] of HAND_CONNECTIONS) {
-      const start = landmarks[startIdx];
-      const end = landmarks[endIdx];
-      if (!start || !end) continue;
-
-      ctx.beginPath();
-      ctx.moveTo(start.x * canvas.width, start.y * canvas.height);
-      ctx.lineTo(end.x * canvas.width, end.y * canvas.height);
-      ctx.stroke();
-    }
-
-    // Draw 21 landmark joints
-    for (let i = 0; i < landmarks.length; i++) {
-      const pt = landmarks[i];
-      const x = pt.x * canvas.width;
-      const y = pt.y * canvas.height;
-
-      ctx.beginPath();
-      ctx.arc(x, y, i === 0 ? 6 : 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = i === 0 ? '#f59e0b' : '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#0f172a';
-      ctx.stroke();
-    }
-  }, []);
-
   // 2. Manage webcam stream lifecycle & throttled detection loop
   useEffect(() => {
     let active = true;
@@ -191,6 +152,9 @@ export function CameraView({
         timestampMs: 0,
       };
       setFpsDisplay(0);
+      smootherRef.current.reset();
+      evaluatorRef.current.reset();
+      lastEmittedEvalRef.current = null;
     }
 
     if (!cameraEnabled) {
@@ -288,7 +252,66 @@ export function CameraView({
             timestampMs: now,
           };
 
-          drawOverlay(result);
+          let latestEval: EvaluationResult | null = null;
+
+          if (targetSign && pack) {
+            const smoothedLandmarks = detectedLandmarks
+              ? smootherRef.current.filter(detectedLandmarks, now)
+              : null;
+
+            if (!detectedLandmarks) {
+              smootherRef.current.reset();
+            }
+
+            latestEval = evaluatorRef.current.evaluateFrame(
+              {
+                landmarks: smoothedLandmarks,
+                handedness: anatomicalHand ?? 'Right',
+                mediaPipeScore: category?.score ?? 0,
+                timestampMs: now,
+              },
+              targetSign,
+              pack
+            );
+
+            // Notify parent UI only on meaningful state transitions or ~10Hz for hold progress
+            const prev = lastEmittedEvalRef.current;
+            const stateChanged =
+              !prev ||
+              prev.status !== latestEval.status ||
+              prev.unableReason !== latestEval.unableReason ||
+              prev.topIssue?.ruleId !== latestEval.topIssue?.ruleId ||
+              prev.hold.completed !== latestEval.hold.completed;
+
+            if (stateChanged || now - lastEvalEmitTimeRef.current >= 100) {
+              lastEmittedEvalRef.current = latestEval;
+              lastEvalEmitTimeRef.current = now;
+              onEvaluationChange?.(latestEval);
+            }
+          }
+
+          // Render accessible per-finger skeleton overlay
+          const canvas = canvasRef.current;
+          if (canvas && video) {
+            if (
+              video.videoWidth > 0 &&
+              video.videoHeight > 0 &&
+              (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)
+            ) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+            }
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              drawDiagnosticHandOverlay(
+                ctx,
+                canvas.width,
+                canvas.height,
+                detectedLandmarks,
+                latestEval
+              );
+            }
+          }
 
           // Update FPS readout every 500ms without per-frame React state churn
           fpsFrameCountRef.current += 1;
@@ -331,7 +354,7 @@ export function CameraView({
       active = false;
       stopStream();
     };
-  }, [cameraEnabled, targetFps, drawOverlay, activeFrameRef]);
+  }, [cameraEnabled, targetFps, targetSign, pack, onEvaluationChange, activeFrameRef]);
 
   return (
     <section

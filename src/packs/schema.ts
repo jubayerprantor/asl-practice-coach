@@ -1,5 +1,6 @@
 import type { FeatureName } from '../engine/features';
 import type { FingerName } from '../engine/types';
+import type { UnableToEvaluateReason } from '../engine/evaluateTypes';
 
 export type ThresholdStatus = 'provisional' | 'validated';
 
@@ -77,6 +78,7 @@ export interface FeedbackPackFile {
   schemaVersion: '1.0.0';
   language: string;
   messages: Record<string, string>;
+  unableReasons: Record<UnableToEvaluateReason, string>;
 }
 
 export interface CurriculumLesson {
