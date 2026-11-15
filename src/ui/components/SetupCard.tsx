@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { tokens } from '../tokens';
 import { BoundingBoxIcon, HandIcon, SunIcon } from '../icons';
 import type { CameraDeviceInfo } from './CameraMenu';
+import { cameraService } from '../../services/camera';
 
 interface SetupCardProps {
   isBlocked?: boolean;
@@ -23,7 +24,6 @@ export function SetupCard({
   isTouch = false,
 }: SetupCardProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const [streamActive, setStreamActive] = useState<boolean>(false);
   const [framingReady, setFramingReady] = useState<boolean>(false);
   const [statusChipText, setStatusChipText] = useState<string>('Searching for hand');
@@ -35,43 +35,32 @@ export function SetupCard({
 
     let active = true;
 
-    async function initCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: selectedCameraId
-            ? { deviceId: { exact: selectedCameraId }, width: { ideal: 640 }, height: { ideal: 480 } }
-            : { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
-          audio: false,
-        });
+    // Start or share stream from CameraService
+    cameraService.start(selectedCameraId ?? undefined).catch(() => {});
 
-        if (!active) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-        }
-        setStreamActive(true);
-        setStatusChipText('Hand detected');
-        setFramingReady(true);
-      } catch {
-        if (active) {
-          setStreamActive(false);
-          setStatusChipText('Camera ready');
+    const unsubStream = cameraService.subscribeStream((stream) => {
+      if (!active) return;
+      if (videoRef.current && videoRef.current.srcObject !== stream) {
+        videoRef.current.srcObject = stream;
+        if (stream) {
+          videoRef.current.play().catch(() => {});
         }
       }
-    }
-
-    initCamera();
+      const hasLiveStream = Boolean(stream && stream.getVideoTracks().some((t) => t.readyState === 'live'));
+      setStreamActive(hasLiveStream);
+      if (hasLiveStream) {
+        setStatusChipText('Hand detected');
+        setFramingReady(true);
+      } else {
+        setStatusChipText('Camera ready');
+      }
+    });
 
     return () => {
       active = false;
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
+      unsubStream();
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
       }
     };
   }, [isBlocked, selectedCameraId]);
