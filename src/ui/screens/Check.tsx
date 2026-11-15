@@ -29,6 +29,8 @@ interface CheckScreenProps {
   onChooseCamera?: () => void;
   cameraChangedNotice?: string | null;
   onCameraDisconnected?: () => void;
+  availableSigns?: string[];
+  onSelectSign?: (sign: string) => void;
 }
 
 export function CheckScreen({
@@ -50,6 +52,8 @@ export function CheckScreen({
   onChooseCamera,
   cameraChangedNotice = null,
   onCameraDisconnected,
+  availableSigns = [],
+  onSelectSign,
 }: CheckScreenProps) {
   const [mobileSheetOpen, setMobileSheetOpen] = useState<boolean>(false);
 
@@ -81,6 +85,54 @@ export function CheckScreen({
     } else {
       onToggleReference();
     }
+  };
+
+  const renderSignSelector = () => {
+    if (!availableSigns || availableSigns.length === 0) return null;
+    return (
+      <div
+        role="tablist"
+        aria-label="Select sign to check"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+          alignItems: 'center',
+        }}
+      >
+        {availableSigns.map((sign) => {
+          const isSelected = sign === currentTargetSign;
+          return (
+            <button
+              key={sign}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              onClick={() => onSelectSign?.(sign)}
+              style={{
+                height: tokens.shape.chipHeight,
+                minWidth: '38px',
+                padding: '0 12px',
+                borderRadius: tokens.shape.radiusChip,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: isSelected ? 700 : 500,
+                cursor: 'pointer',
+                backgroundColor: isSelected ? tokens.colors.ink : tokens.colors.chipNeutral,
+                color: isSelected ? '#FFFFFF' : tokens.colors.ink,
+                border: isSelected
+                  ? `1.5px solid ${tokens.colors.ink}`
+                  : `1px solid ${tokens.colors.border}`,
+              }}
+            >
+              {sign}
+            </button>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -147,6 +199,7 @@ export function CheckScreen({
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {renderSignSelector()}
                 <TargetSign
                   sign={currentTargetSign}
                   showReference={showReference}
@@ -194,6 +247,7 @@ export function CheckScreen({
           ) : (
             /* Desktop and Mobile */
             <>
+              {renderSignSelector()}
               <TargetSign
                 sign={currentTargetSign}
                 showReference={showReference}

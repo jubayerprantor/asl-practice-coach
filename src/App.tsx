@@ -225,6 +225,15 @@ export default function App() {
   const attemptStartTimeRef = useRef<number>(performance.now());
   const fingerMistakesRef = useRef<Partial<Record<FingerName, number>>>({});
   const holdAlreadyHandledRef = useRef<boolean>(false);
+  const checkAdvanceTimerRef = useRef<NodeJS.Timeout | number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (checkAdvanceTimerRef.current) {
+        clearTimeout(checkAdvanceTimerRef.current);
+      }
+    };
+  }, []);
 
   // Screen reader live status message
   const [srMessage, setSrMessage] = useState<string>('');
@@ -262,7 +271,9 @@ export default function App() {
         (fingerMistakesRef.current[finger] ?? 0) + 1;
     }
 
-    if (evaluation.hold?.completed && !holdAlreadyHandledRef.current) {
+    if (!evaluation.hold?.completed) {
+      holdAlreadyHandledRef.current = false;
+    } else if (!holdAlreadyHandledRef.current) {
       holdAlreadyHandledRef.current = true;
 
       const completion = handleHoldCompletion({
@@ -284,22 +295,19 @@ export default function App() {
         if (completion.isLessonComplete) {
           // Section 9: Enter Lesson complete view
           setIsLessonComplete(true);
-        } else {
-          const timer = setTimeout(() => {
-            holdAlreadyHandledRef.current = false;
-          }, 400);
-          return () => clearTimeout(timer);
         }
       } else {
         // Check mode: quiet 500ms pause before advancing to next sign
-        const timer = setTimeout(() => {
+        if (checkAdvanceTimerRef.current) {
+          clearTimeout(checkAdvanceTimerRef.current);
+        }
+        checkAdvanceTimerRef.current = setTimeout(() => {
           holdAlreadyHandledRef.current = false;
           attemptStartTimeRef.current = performance.now();
           fingerMistakesRef.current = {};
           setCheckSignIdx((prev) => (prev + 1) % availableSigns.length);
+          checkAdvanceTimerRef.current = null;
         }, 500);
-
-        return () => clearTimeout(timer);
       }
     }
   }, [
@@ -449,8 +457,21 @@ export default function App() {
     const idx = availableSigns.indexOf(sign);
     if (idx !== -1) {
       setCheckSignIdx(idx);
+      holdAlreadyHandledRef.current = false;
+      attemptStartTimeRef.current = performance.now();
+      fingerMistakesRef.current = {};
     }
     setMode('check');
+  };
+
+  const handleSelectCheckSign = (sign: string) => {
+    const idx = availableSigns.indexOf(sign);
+    if (idx !== -1) {
+      setCheckSignIdx(idx);
+      holdAlreadyHandledRef.current = false;
+      attemptStartTimeRef.current = performance.now();
+      fingerMistakesRef.current = {};
+    }
   };
 
   return (
@@ -582,6 +603,8 @@ export default function App() {
             onChooseCamera={handleChooseCamera}
             cameraChangedNotice={cameraChangedNotice}
             onCameraDisconnected={handleCameraDisconnected}
+            availableSigns={availableSigns}
+            onSelectSign={handleSelectCheckSign}
           />
         ) : (
           /* Learn Screen */

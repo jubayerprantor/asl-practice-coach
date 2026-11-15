@@ -241,6 +241,10 @@ export function CameraPanel({
           };
         }
 
+        if (currentEval.hold.completed) {
+          evaluatorRef.current.resetHoldTimer();
+        }
+
         // Debounced emit to parent
         const evalChanged =
           !lastEmittedEvalRef.current ||

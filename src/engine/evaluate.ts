@@ -371,7 +371,7 @@ export class SignEvaluatorSession {
     };
   }
 
-  private resetHoldTimer(): void {
+  public resetHoldTimer(): void {
     this.holdStartMs = null;
     this.lastPassingMs = null;
     this.holdCompleted = false;

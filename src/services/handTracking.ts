@@ -263,14 +263,11 @@ export class HandTrackingService implements LandmarkSource {
       const detectedWorldLandmarks = (result.worldLandmarks?.[0] as Vec3[]) ?? null;
       const category = result.handednesses?.[0]?.[0];
 
-      const rawHand =
+      // MediaPipe HandLandmarker categoryName directly provides the anatomical hand
+      const anatomicalHand: AnatomicalHandedness | null =
         category?.categoryName === 'Left' || category?.categoryName === 'Right'
           ? category.categoryName
           : null;
-
-      // In mirror/selfie mode, MediaPipe Left corresponds to anatomical Right
-      const anatomicalHand: AnatomicalHandedness | null =
-        rawHand === 'Left' ? 'Right' : rawHand === 'Right' ? 'Left' : null;
 
       const score = category?.score ?? 0;
       const status = score < 0.5 ? 'low_confidence' : 'tracking';
