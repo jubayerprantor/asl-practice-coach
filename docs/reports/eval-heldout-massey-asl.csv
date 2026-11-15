@@ -1,0 +1,6 @@
+dataset,label,total_samples,evaluable_samples,unable_to_evaluate_count,unable_to_evaluate_rate_pct,correct_count,recognition_accuracy_overall_pct,recognition_accuracy_evaluable_pct,false_correction_count,false_correction_rate_pct
+massey-asl,A,20,19,1,5.00,19,95.00,100.00,0,0.00
+massey-asl,B,20,19,1,5.00,19,95.00,100.00,0,0.00
+massey-asl,L,20,19,1,5.00,19,95.00,100.00,0,0.00
+massey-asl,V,20,19,1,5.00,19,95.00,100.00,0,0.00
+massey-asl,Y,20,19,1,5.00,19,95.00,100.00,0,0.00
