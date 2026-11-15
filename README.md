@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="ASL-Practice-Coach-Branding/artwork/horizontal-color.svg" alt="ASL Practice Coach" width="360" />
+  <img src="public/branding/horizontal-color.svg" alt="ASL Practice Coach" width="360" />
 </p>
 
 <p align="center">
@@ -53,9 +53,8 @@ Unlike traditional flashcards or passive videos that offer no validation, ASL Pr
 ```text
 /
 ├── .github/workflows/       # GitHub Actions automated desktop packaging CI/CD
-├── ASL-Practice-Coach-Branding/ # Brand guidelines, SVGs, and web icon assets
-├── data/                    # Processed evaluation datasets (e.g. Massey ASL)
-├── docs/                    # Architecture records, test protocols, parity checklists
+├── docs/                    # Architecture records, test protocols, branding guidelines
+│   ├── branding/            # Brand identity board & logo usage guidelines
 │   ├── reports/             # Generated evaluation summaries and accuracy benchmarks
 │   ├── desktop-build.md     # Desktop packaging instructions and CI architecture
 │   └── desktop-parity.md    # Desktop-to-web behavioral parity checklist
@@ -90,7 +89,7 @@ The brand identity centers on the **Muscle-Memory Loop**—a continuous line tra
 | **Eggshell Ground**| `#F6F6F3` | Warm, non-glare application background |
 | **Borders** | `#E3E3DE` | Clean, subtle architectural dividing lines |
 
-Vector brand assets are organized in [`ASL-Practice-Coach-Branding/`](file:///c:/Users/DSU/Downloads/PROGRAMMING/ASL%20Practice%20Coach/ASL-Practice-Coach-Branding):
+Vector brand assets are organized in [`public/branding/`](file:///c:/Users/DSU/Downloads/PROGRAMMING/ASL%20Practice%20Coach/public/branding) and guidelines in [`docs/branding/`](file:///c:/Users/DSU/Downloads/PROGRAMMING/ASL%20Practice%20Coach/docs/branding):
 - `artwork/horizontal-color.svg` — Standard header lockup
 - `artwork/symbol-color.svg` — Standalone logo symbol / app mark
 - `icons/` — Complete favicon and manifest suite (`favicon.ico`, `favicon.svg`, `icon-180.png`, `icon-192.png`, `icon-512.png`)
