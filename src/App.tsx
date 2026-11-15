@@ -13,7 +13,7 @@ import { ProgressScreen } from './ui/screens/Progress';
 import { LearnScreen } from './ui/screens/Learn';
 import { CheckScreen } from './ui/screens/Check';
 import { DebouncedSpeechCoach } from './ui/speechCoach';
-import { logPracticeAttempt } from './storage/db';
+import { handleHoldCompletion } from './ui/practiceHandler';
 import type { EvaluationResult, FingerName, LandmarkSource } from './engine';
 import type { LessonSignStatus } from './ui/components/LessonPath';
 import type { AppMode } from './ui/components/ModeTabs';
@@ -263,45 +263,23 @@ export default function App() {
     if (evaluation.hold?.completed && !holdAlreadyHandledRef.current) {
       holdAlreadyHandledRef.current = true;
 
-      // Determine most common failing finger
-      let maxErrors = 0;
-      let topFailingFinger: FingerName | null = null;
-      for (const [f, count] of Object.entries(fingerMistakesRef.current)) {
-        if (count && count > maxErrors) {
-          maxErrors = count;
-          topFailingFinger = f as FingerName;
-        }
-      }
+      const completion = handleHoldCompletion({
+        isMockActive,
+        mode: mode === 'learn' ? 'learn' : 'check',
+        language: loadedPack.manifest.id,
+        sign: currentTargetSign,
+        attemptStartTimeMs: attemptStartTimeRef.current,
+        fingerMistakes: fingerMistakesRef.current,
+        completedHolds,
+        requiredHolds,
+      });
 
-      const fingerLabel =
-        topFailingFinger === 'pinky'
-          ? 'little'
-          : topFailingFinger;
-      setMostAdjustedFinger(fingerLabel);
-
-      // Log attempt to IndexedDB (Rule 4: Mock results must never be saved to progress storage)
-      if (!isMockActive) {
-        const durationMs = Math.round(
-          performance.now() - attemptStartTimeRef.current
-        );
-        logPracticeAttempt({
-          mode: mode === 'learn' ? 'learn' : 'check',
-          language: loadedPack.manifest.id,
-          sign: currentTargetSign,
-          success: true,
-          timeToSuccessMs: durationMs,
-          durationMs,
-          mostCommonFailingFinger: topFailingFinger,
-          fingerErrorCounts: { ...fingerMistakesRef.current },
-          completedAt: new Date().toISOString(),
-        }).catch((err) => console.warn('Failed to log attempt:', err));
-      }
+      setMostAdjustedFinger(completion.mostAdjustedFinger);
 
       if (mode === 'learn') {
-        const nextHolds = completedHolds + 1;
-        setCompletedHolds(nextHolds);
+        setCompletedHolds(completion.nextHolds);
 
-        if (nextHolds >= requiredHolds) {
+        if (completion.isLessonComplete) {
           // Section 9: Enter Lesson complete view
           setIsLessonComplete(true);
         } else {
