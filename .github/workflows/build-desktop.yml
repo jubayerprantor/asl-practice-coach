@@ -37,7 +37,7 @@ jobs:
         run: npm run verify:web
 
       - name: Install Cloud Desktop Packaging Tools
-        run: npm install --no-save electron electron-builder
+        run: npm install -D electron@34.0.0 electron-builder
 
       - name: Package Desktop Installer (with distScan check)
         run: npm run build:desktop
