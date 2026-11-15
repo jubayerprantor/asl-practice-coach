@@ -356,6 +356,18 @@ export function CameraView({
     };
   }, [cameraEnabled, targetFps, targetSign, pack, onEvaluationChange, activeFrameRef]);
 
+  // Alt+C keyboard shortcut to toggle camera on/off
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        setCameraEnabled((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   return (
     <section
       aria-label="Webcam hand tracking view"
@@ -379,6 +391,7 @@ export function CameraView({
           type="button"
           onClick={() => setCameraEnabled((prev) => !prev)}
           aria-pressed={cameraEnabled}
+          title="Toggle camera (Alt+C)"
           style={{
             padding: '0.55rem 1rem',
             fontSize: '0.95rem',
@@ -390,7 +403,7 @@ export function CameraView({
             cursor: 'pointer',
           }}
         >
-          {cameraEnabled ? 'Turn Camera Off' : 'Turn Camera On'}
+          {cameraEnabled ? 'Turn Camera Off (Alt+C)' : 'Turn Camera On (Alt+C)'}
         </button>
 
         <span style={{ fontSize: '0.85rem', color: '#475569' }}>

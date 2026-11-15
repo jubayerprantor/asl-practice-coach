@@ -103,6 +103,20 @@ export function FeedbackPanel({
     return () => coach.reset();
   }, []);
 
+  // Alt+V keyboard shortcut to toggle voice coaching
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        if (speechSupported) {
+          setVoiceEnabled((v) => !v);
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [speechSupported]);
+
   const holdPct = evaluation
     ? Math.round(evaluation.hold.progress * 100)
     : 0;
@@ -195,6 +209,19 @@ export function FeedbackPanel({
       >
         {primaryMessage}
       </p>
+
+      {/* Visible Last Spoken Cue Caption when voice is active */}
+      {voiceEnabled && spokenCue && (
+        <div
+          style={{
+            fontSize: '0.8rem',
+            color: '#38bdf8',
+            fontStyle: 'italic',
+          }}
+        >
+          Last spoken cue: "{spokenCue}"
+        </div>
+      )}
 
       {/* Hold Progress Bar */}
       {evaluation && evaluation.status === 'correct' && (

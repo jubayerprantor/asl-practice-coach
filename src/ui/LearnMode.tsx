@@ -17,6 +17,7 @@ import {
 import { CameraView } from './CameraView';
 import { FeedbackPanel } from './FeedbackPanel';
 import { ReferenceSkeletonView } from './ReferenceSkeletonView';
+import { CameraSetupCheck } from './CameraSetupCheck';
 
 interface LearnModeProps {
   pack: SignPackBundle;
@@ -70,6 +71,7 @@ export function LearnMode({
   const [queueIdx, setQueueIdx] = useState<number>(0);
   const [holdsCompletedInStep, setHoldsCompletedInStep] = useState<number>(0);
   const [awaitingReposition, setAwaitingReposition] = useState<boolean>(false);
+  const [setupDismissed, setSetupDismissed] = useState<boolean>(false);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
 
   const stepStartMsRef = useRef<number>(performance.now());
@@ -305,6 +307,14 @@ export function LearnMode({
           );
         })}
       </div>
+
+      {/* Pre-practice Camera Setup & Framing Checklist */}
+      <CameraSetupCheck
+        evaluation={evaluation}
+        dismissed={setupDismissed}
+        onDismiss={() => setSetupDismissed(true)}
+        onReopen={() => setSetupDismissed(false)}
+      />
 
       {/* Session Progress Header */}
       {currentItem && (

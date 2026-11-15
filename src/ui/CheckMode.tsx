@@ -16,6 +16,7 @@ import {
 import { CameraView } from './CameraView';
 import { FeedbackPanel } from './FeedbackPanel';
 import { ReferenceHintCard } from './ReferenceHintCard';
+import { CameraSetupCheck } from './CameraSetupCheck';
 
 interface CheckModeProps {
   pack: SignPackBundle;
@@ -60,6 +61,7 @@ export function CheckMode({
     availableSigns[0] ?? null
   );
   const [showReference, setShowReference] = useState<boolean>(false);
+  const [setupDismissed, setSetupDismissed] = useState<boolean>(false);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [completedBanner, setCompletedBanner] = useState<{
     sign: string;
@@ -85,6 +87,18 @@ export function CheckMode({
   useEffect(() => {
     refreshRecentLogs();
   }, [refreshRecentLogs]);
+
+  // Alt+R keyboard shortcut to toggle reference card
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        setShowReference((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   // Reset attempt tracking whenever user picks a new sign
   const selectSignForCheck = useCallback(
@@ -243,7 +257,7 @@ export function CheckMode({
             gap: '0.45rem',
           }}
         >
-          {availableSigns.map((sign) => {
+          {availableSigns.map((sign, idx) => {
             const isSelected = sign === selectedSign;
             const hasSucceeded = masterSignsSet.has(sign);
             return (
@@ -251,6 +265,21 @@ export function CheckMode({
                 key={sign}
                 type="button"
                 onClick={() => selectSignForCheck(sign)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const next =
+                      availableSigns[(idx + 1) % availableSigns.length];
+                    selectSignForCheck(next);
+                  } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const prev =
+                      availableSigns[
+                        (idx - 1 + availableSigns.length) % availableSigns.length
+                      ];
+                    selectSignForCheck(prev);
+                  }
+                }}
                 aria-pressed={isSelected}
                 style={{
                   padding: '0.6rem 0.25rem',
@@ -281,6 +310,14 @@ export function CheckMode({
         </div>
       </div>
 
+      {/* Pre-practice Camera Setup & Framing Checklist */}
+      <CameraSetupCheck
+        evaluation={evaluation}
+        dismissed={setupDismissed}
+        onDismiss={() => setSetupDismissed(true)}
+        onReopen={() => setSetupDismissed(false)}
+      />
+
       {/* Active Sign Header + Optional Reference Toggle */}
       {selectedSign && (
         <div
@@ -310,6 +347,7 @@ export function CheckMode({
               type="button"
               onClick={() => setShowReference((prev) => !prev)}
               aria-expanded={showReference}
+              title="Toggle reference notes (Alt+R)"
               style={{
                 padding: '0.45rem 0.85rem',
                 borderRadius: '6px',
@@ -320,7 +358,7 @@ export function CheckMode({
                 cursor: 'pointer',
               }}
             >
-              {showReference ? 'Hide Reference' : 'Show Reference'}
+              {showReference ? 'Hide Reference (Alt+R)' : 'Show Reference (Alt+R)'}
             </button>
 
             <button
