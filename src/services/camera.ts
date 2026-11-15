@@ -228,7 +228,6 @@ export class CameraService {
           : {
               width: { ideal: 1280 },
               height: { ideal: 720 },
-              facingMode: 'user',
             },
         audio: false,
       };
@@ -248,6 +247,7 @@ export class CameraService {
       this.refreshDevices().catch(() => {});
       return stream;
     } catch (err: any) {
+      console.warn('[CameraService] getUserMedia failed:', err?.name, err?.message);
       if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
         this.setState('blocked');
       } else {

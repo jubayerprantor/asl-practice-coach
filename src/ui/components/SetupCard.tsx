@@ -285,6 +285,7 @@ export function SetupCard({
         {/* Video feed */}
         <video
           ref={videoRef}
+          autoPlay
           playsInline
           muted
           style={{
@@ -319,9 +320,15 @@ export function SetupCard({
       >
         <button
           type="button"
-          onClick={onStart}
-          disabled={!streamActive && !framingReady}
-          aria-disabled={!streamActive && !framingReady}
+          onClick={async () => {
+            if (streamActive) {
+              onStart();
+            } else {
+              try {
+                await cameraService.start(selectedCameraId ?? undefined);
+              } catch {}
+            }
+          }}
           className="btn-primary"
           style={{
             height: btnHeight,

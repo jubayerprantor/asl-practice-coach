@@ -15,6 +15,8 @@ const { pathToFileURL } = require('url');
 
 // 1. Register custom privileged protocol before app is ready
 // Pick origin once: app://asl (persists IndexedDB and localStorage partitions)
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: 'app',
@@ -209,13 +211,39 @@ app.whenReady().then(async () => {
     });
   });
 
+  const isAllowedOrigin = (urlStr) => {
+    if (!urlStr) return false;
+    if (urlStr === 'app://asl' || urlStr.startsWith('app://asl/')) return true;
+    try {
+      const u = new URL(urlStr);
+      return u.protocol === 'app:' && (u.hostname === 'asl' || u.host === 'asl');
+    } catch {
+      return false;
+    }
+  };
+
+  const isMediaPermission = (permission, details) => {
+    if (
+      permission === 'media' ||
+      permission === 'camera' ||
+      permission === 'video'
+    ) {
+      return true;
+    }
+    if (
+      details?.mediaTypes?.includes('video') ||
+      details?.mediaTypes?.includes('camera')
+    ) {
+      return true;
+    }
+    return false;
+  };
+
   // 3. Permissions: allow only "media" permission for origin "app://asl", deny all others
   session.defaultSession.setPermissionRequestHandler(
     (webContents, permission, callback, details) => {
-      const requestingOrigin = new URL(
-        details.requestingUrl || webContents.getURL()
-      ).origin;
-      if (permission === 'media' && requestingOrigin === 'app://asl') {
+      const targetUrl = details?.requestingUrl || webContents.getURL();
+      if (isMediaPermission(permission, details) && isAllowedOrigin(targetUrl)) {
         callback(true);
       } else {
         callback(false);
@@ -224,8 +252,15 @@ app.whenReady().then(async () => {
   );
 
   session.defaultSession.setPermissionCheckHandler(
-    (webContents, permission, requestingOrigin) => {
-      return permission === 'media' && requestingOrigin === 'app://asl';
+    (webContents, permission, requestingOrigin, details) => {
+      const targetUrl =
+        requestingOrigin || details?.requestingUrl || webContents?.getURL();
+      if (isMediaPermission(permission, details)) {
+        if (!targetUrl || targetUrl === 'null' || isAllowedOrigin(targetUrl)) {
+          return true;
+        }
+      }
+      return false;
     }
   );
 
