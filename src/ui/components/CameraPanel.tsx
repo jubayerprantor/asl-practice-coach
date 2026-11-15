@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import {
   HandLandmarkSmoother,
   SignEvaluatorSession,
   type AnatomicalHandedness,
   type EvaluationResult,
   type FingerName,
+  type LandmarkFrame,
   type LandmarkSource,
   type SignPackBundle,
   type Vec3,
@@ -14,6 +14,8 @@ import type { SignReferenceEntry } from '../../packs/schema';
 import { tokens } from '../tokens';
 import { CameraOffIcon } from '../icons';
 import { ReferenceInset } from './ReferenceInset';
+import { cameraService } from '../../services/camera';
+import { handTrackingService, type HandTrackingStatus } from '../../services/handTracking';
 
 export type TrackingStatus = 'loading' | 'ready' | 'error';
 
@@ -75,7 +77,7 @@ export function CameraPanel({
   isMobile = false,
   isTablet = false,
   selectedCameraId = null,
-  landmarkSource = null,
+  landmarkSource = handTrackingService,
   isCameraDisconnected = false,
   onEvaluationChange,
   onTrackingStatusChange,
@@ -84,24 +86,14 @@ export function CameraPanel({
 }: CameraPanelProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const rafIdRef = useRef<number | null>(null);
-  const landmarkerRef = useRef<HandLandmarker | null>(null);
 
   const smootherRef = useRef<HandLandmarkSmoother>(new HandLandmarkSmoother());
   const evaluatorRef = useRef<SignEvaluatorSession>(new SignEvaluatorSession());
   const lastEmittedEvalRef = useRef<EvaluationResult | null>(null);
   const lastEvalEmitTimeRef = useRef<number>(0);
 
-  const lastInferTimeRef = useRef<number>(0);
-  const lastVideoTimeRef = useRef<number>(-1);
-
-  // FPS calculation for slow camera detection (Section 16: < 15 FPS for several seconds)
-  const fpsWindowRef = useRef<number[]>([]);
-  const [isSlowCamera, setIsSlowCamera] = useState<boolean>(false);
-
   // Tracking initialization state (Section 16: no spinners; determinate bar if progress known)
-  const [trackingStatus, setTrackingStatus] = useState<TrackingStatus>('loading');
+  const [trackingStatus, setTrackingStatus] = useState<TrackingStatus>('ready');
   const [loadingProgress] = useState<number>(100);
 
   const [handState, setHandState] = useState<{
@@ -118,91 +110,36 @@ export function CameraPanel({
     isPassing: false,
   });
 
-  // 1. Initialize MediaPipe HandLandmarker (bypassed if landmarkSource is provided)
+  // Reset evaluator & smoother on targetSign change
   useEffect(() => {
-    if (landmarkSource) {
+    evaluatorRef.current.reset();
+    smootherRef.current.reset();
+    lastEmittedEvalRef.current = null;
+  }, [targetSign]);
+
+  const activeSource = landmarkSource ?? handTrackingService;
+
+  // 1. Subscribe to HandTrackingService status if available
+  useEffect(() => {
+    if ('subscribeStatus' in activeSource && typeof (activeSource as any).subscribeStatus === 'function') {
+      const unsub = (activeSource as any).subscribeStatus((st: HandTrackingStatus) => {
+        const mappedStatus: TrackingStatus = st === 'failed' ? 'error' : st;
+        setTrackingStatus(mappedStatus);
+        onTrackingStatusChange?.(mappedStatus);
+      });
+      return unsub;
+    } else {
       setTrackingStatus('ready');
       onTrackingStatusChange?.('ready');
-      setHandState((prev) => ({
-        ...prev,
-        statusText: 'Mock tracking ready',
-      }));
-      return;
     }
+  }, [activeSource, onTrackingStatusChange]);
 
-    let cancelled = false;
-
-    async function init() {
-      try {
-        setTrackingStatus('loading');
-        onTrackingStatusChange?.('loading');
-
-        const vision = await FilesetResolver.forVisionTasks('/mediapipe/wasm');
-        const landmarker = await HandLandmarker.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath: '/mediapipe/hand_landmarker.task',
-            delegate: 'GPU',
-          },
-          runningMode: 'VIDEO',
-          numHands: 2, // Support detecting two hands (Section 16)
-        });
-
-        if (cancelled) {
-          landmarker.close();
-          return;
-        }
-
-        landmarkerRef.current = landmarker;
-        setTrackingStatus('ready');
-        onTrackingStatusChange?.('ready');
-        setHandState((prev) => ({
-          ...prev,
-          statusText: 'Camera ready',
-        }));
-      } catch (err) {
-        console.error('Failed to initialize HandLandmarker:', err);
-        if (!cancelled) {
-          setTrackingStatus('error');
-          onTrackingStatusChange?.('error');
-          setHandState((prev) => ({
-            ...prev,
-            statusText: "Hand tracking couldn't load",
-          }));
-        }
-      }
-    }
-
-    init();
-
-    return () => {
-      cancelled = true;
-      if (landmarkerRef.current) {
-        landmarkerRef.current.close();
-        landmarkerRef.current = null;
-      }
-    };
-  }, [onTrackingStatusChange, landmarkSource]);
-
-  // 2. Manage Webcam Stream and Inference Loop
+  // 2. Manage CameraService stream attachment
   useEffect(() => {
-    let active = true;
-
-    async function stop() {
-      if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
+    if (!cameraEnabled || isCameraDisconnected) {
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
-    }
-
-    if (!cameraEnabled || isCameraDisconnected) {
-      stop();
       setHandState({
         detected: false,
         multipleHands: false,
@@ -213,327 +150,177 @@ export function CameraPanel({
       return;
     }
 
-    // Dev-only Mock LandmarkSource support (Step 3)
-    if (landmarkSource) {
-      stop();
-      setHandState({
-        detected: false,
-        multipleHands: false,
-        handedness: null,
-        statusText: 'Replaying mock landmarks',
-        isPassing: false,
-      });
+    // Start or reuse stream from CameraService
+    cameraService.start(selectedCameraId ?? undefined).catch(() => {});
 
-      const unsubscribe = landmarkSource.subscribe((frame) => {
-        if (!active) return;
-        const now = frame.timestampMs ?? performance.now();
-        const canvas = canvasRef.current;
-
-        if (frame.status === 'disconnected') {
-          onCameraDisconnected?.();
-          setHandState({
-            detected: false,
-            multipleHands: false,
-            handedness: null,
-            statusText: 'Camera disconnected',
-            isPassing: false,
-          });
-          if (canvas) {
-            const ctx = canvas.getContext('2d');
-            ctx?.clearRect(0, 0, canvas.width, canvas.height);
-          }
-          return;
+    // Attach stream to video element
+    const unsubStream = cameraService.subscribeStream((stream) => {
+      if (videoRef.current && videoRef.current.srcObject !== stream) {
+        videoRef.current.srcObject = stream;
+        if (stream) {
+          videoRef.current.play().catch(() => {});
         }
+      }
+    });
 
-        const multipleHands = frame.status === 'two_hands';
-        const detectedLandmarks = frame.landmarks;
-        const anatomicalHand = frame.handedness ?? 'Right';
+    const unsubState = cameraService.subscribeState((st) => {
+      if (st === 'disconnected') {
+        onCameraDisconnected?.();
+      }
+    });
 
-        let currentEval: EvaluationResult | null = null;
-        if (targetSign && pack) {
-          const smoothed = detectedLandmarks
-            ? smootherRef.current.filter(detectedLandmarks, now)
-            : null;
+    return () => {
+      unsubStream();
+      unsubState();
+    };
+  }, [cameraEnabled, isCameraDisconnected, selectedCameraId, onCameraDisconnected]);
 
-          if (!detectedLandmarks) {
-            smootherRef.current.reset();
-          }
-
-          currentEval = evaluatorRef.current.evaluateFrame(
-            {
-              landmarks: multipleHands ? null : smoothed,
-              handedness: anatomicalHand,
-              mediaPipeScore: frame.confidence ?? 0.95,
-              timestampMs: now,
-            },
-            targetSign,
-            pack
-          );
-
-          if (multipleHands && currentEval) {
-            currentEval = {
-              ...currentEval,
-              status: 'unable_to_evaluate',
-              unableReason: 'hand_too_close',
-            };
-          }
-
-          onEvaluationChange?.(currentEval);
-        }
-
-        let statusText = 'No hand detected';
-        if (multipleHands) {
-          statusText = 'Two hands detected';
-        } else if (frame.status === 'low_confidence') {
-          statusText = 'Low tracking confidence';
-        } else if (frame.status === 'too_far') {
-          statusText = 'Hand too far';
-        } else if (detectedLandmarks && anatomicalHand) {
-          statusText = `${anatomicalHand} hand detected`;
-        }
-
-        setHandState({
-          detected: Boolean(detectedLandmarks) && !multipleHands,
-          multipleHands,
-          handedness: anatomicalHand,
-          statusText,
-          isPassing: currentEval?.status === 'correct',
-        });
-
-        if (canvas) {
-          if (canvas.width !== 640 || canvas.height !== 480) {
-            canvas.width = 640;
-            canvas.height = 480;
-          }
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            drawOverlay(
-              ctx,
-              canvas.width,
-              canvas.height,
-              multipleHands ? null : detectedLandmarks,
-              currentEval,
-              isLessonComplete
-            );
-          }
-        }
-      });
-
-      return () => {
-        active = false;
-        unsubscribe();
-      };
+  // 3. Subscribe to LandmarkSource (draw overlay strictly on incoming result, not rAF loop)
+  useEffect(() => {
+    if (!cameraEnabled || isCameraDisconnected) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
     }
 
-    async function start() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: selectedCameraId
-            ? {
-                deviceId: { exact: selectedCameraId },
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-              }
-            : {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: 'user',
-              },
-          audio: false,
-        });
+    activeSource.start();
 
-        // Track disconnection listener (Section 25)
-        const videoTrack = stream.getVideoTracks()[0];
-        if (videoTrack) {
-          videoTrack.onended = () => {
-            onCameraDisconnected?.();
+    const handleFrame = (frame: LandmarkFrame) => {
+      const now = frame.timestampMs ?? performance.now();
+      const canvas = canvasRef.current;
+
+      if (frame.status === 'disconnected') {
+        onCameraDisconnected?.();
+        setHandState({
+          detected: false,
+          multipleHands: false,
+          handedness: null,
+          statusText: 'Camera disconnected',
+          isPassing: false,
+        });
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        return;
+      }
+
+      const multipleHands = frame.status === 'two_hands';
+      const detectedLandmarks = frame.landmarks;
+      const anatomicalHand = frame.handedness ?? 'Right';
+
+      let currentEval: EvaluationResult | null = null;
+      if (targetSign && pack) {
+        const smoothed = detectedLandmarks
+          ? smootherRef.current.filter(detectedLandmarks, now)
+          : null;
+
+        if (!detectedLandmarks) {
+          smootherRef.current.reset();
+        }
+
+        currentEval = evaluatorRef.current.evaluateFrame(
+          {
+            landmarks: multipleHands ? null : smoothed,
+            handedness: anatomicalHand,
+            mediaPipeScore: frame.confidence ?? 0.95,
+            timestampMs: now,
+          },
+          targetSign,
+          pack
+        );
+
+        if (multipleHands && currentEval) {
+          currentEval = {
+            ...currentEval,
+            status: 'unable_to_evaluate',
+            unableReason: 'hand_too_close',
           };
         }
 
-        if (!active) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
+        // Debounced emit to parent
+        const evalChanged =
+          !lastEmittedEvalRef.current ||
+          lastEmittedEvalRef.current.status !== currentEval.status ||
+          lastEmittedEvalRef.current.topIssue?.ruleId !== currentEval.topIssue?.ruleId ||
+          Math.abs(
+            (lastEmittedEvalRef.current.hold.progress ?? 0) -
+              (currentEval.hold.progress ?? 0)
+          ) > 0.05 ||
+          currentEval.hold.completed !== lastEmittedEvalRef.current.hold.completed;
+
+        const timeSinceEmit = now - lastEvalEmitTimeRef.current;
+        if (evalChanged || timeSinceEmit >= 60) {
+          lastEmittedEvalRef.current = currentEval;
+          lastEvalEmitTimeRef.current = now;
+          onEvaluationChange?.(currentEval);
+        }
+      }
+
+      let statusText = 'No hand detected';
+      if (multipleHands) {
+        statusText = 'Two hands detected';
+      } else if (frame.status === 'low_confidence') {
+        statusText = 'Low tracking confidence';
+      } else if (frame.status === 'too_far') {
+        statusText = 'Hand too far';
+      } else if (detectedLandmarks && anatomicalHand) {
+        statusText = `${anatomicalHand} hand detected`;
+      }
+
+      setHandState({
+        detected: Boolean(detectedLandmarks) && !multipleHands,
+        multipleHands,
+        handedness: anatomicalHand,
+        statusText,
+        isPassing: currentEval?.status === 'correct',
+      });
+
+      // Requirement 5: Draw canvas overlay strictly when a new result arrives
+      if (canvas) {
+        const video = videoRef.current;
+        if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+          if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+          }
+        } else if (canvas.width !== 640 || canvas.height !== 480) {
+          canvas.width = 640;
+          canvas.height = 480;
         }
 
-        streamRef.current = stream;
-        const video = videoRef.current;
-        if (!video) return;
-
-        video.srcObject = stream;
-        await video.play();
-
-        const minIntervalMs = 1000 / 25; // 25 FPS throttle to conserve RAM & CPU
-
-        const processFrame = (now: number) => {
-          if (!active) return;
-          rafIdRef.current = requestAnimationFrame(processFrame);
-
-          // Track FPS for slow camera detection (Section 16)
-          const windowTimes = fpsWindowRef.current;
-          windowTimes.push(now);
-          if (windowTimes.length > 50) {
-            windowTimes.shift();
-            const elapsedSec = (now - windowTimes[0]) / 1000;
-            const currentFps = windowTimes.length / elapsedSec;
-            setIsSlowCamera(currentFps < 15);
-          }
-
-          if (now - lastInferTimeRef.current < minIntervalMs) {
-            return;
-          }
-
-          const landmarker = landmarkerRef.current;
-          if (
-            !landmarker ||
-            video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA
-          ) {
-            return;
-          }
-
-          if (video.currentTime === lastVideoTimeRef.current) {
-            return;
-          }
-          lastVideoTimeRef.current = video.currentTime;
-          lastInferTimeRef.current = now;
-
-          const result = landmarker.detectForVideo(video, now);
-          const handCount = result.landmarks?.length ?? 0;
-          const multipleHands = handCount > 1;
-          const detectedLandmarks = result.landmarks?.[0] ?? null;
-          const category = result.handednesses?.[0]?.[0];
-
-          const rawHand =
-            category?.categoryName === 'Left' ||
-            category?.categoryName === 'Right'
-              ? category.categoryName
-              : null;
-
-          const anatomicalHand: AnatomicalHandedness | null =
-            rawHand === 'Left' ? 'Right' : rawHand === 'Right' ? 'Left' : null;
-
-          let currentEval: EvaluationResult | null = null;
-
-          if (targetSign && pack) {
-            const smoothed = detectedLandmarks
-              ? smootherRef.current.filter(detectedLandmarks, now)
-              : null;
-
-            if (!detectedLandmarks) {
-              smootherRef.current.reset();
-            }
-
-            currentEval = evaluatorRef.current.evaluateFrame(
-              {
-                landmarks: multipleHands ? null : smoothed,
-                handedness: anatomicalHand ?? 'Right',
-                mediaPipeScore: category?.score ?? 0,
-                timestampMs: now,
-              },
-              targetSign,
-              pack
-            );
-
-            // Handle two hands edge state (Section 16)
-            if (multipleHands && currentEval) {
-              currentEval = {
-                ...currentEval,
-                status: 'unable_to_evaluate',
-                unableReason: 'hand_too_close', // overridden in UI to two_hands_detected
-              };
-            }
-
-            // Emit to parent debounced
-            const evalChanged =
-              !lastEmittedEvalRef.current ||
-              lastEmittedEvalRef.current.status !== currentEval.status ||
-              lastEmittedEvalRef.current.topIssue?.ruleId !==
-                currentEval.topIssue?.ruleId ||
-              Math.abs(
-                (lastEmittedEvalRef.current.hold.progress ?? 0) -
-                  (currentEval.hold.progress ?? 0)
-              ) > 0.05 ||
-              currentEval.hold.completed !==
-                lastEmittedEvalRef.current.hold.completed;
-
-            const timeSinceEmit = now - lastEvalEmitTimeRef.current;
-            if (evalChanged || timeSinceEmit >= 60) {
-              lastEmittedEvalRef.current = currentEval;
-              lastEvalEmitTimeRef.current = now;
-              onEvaluationChange?.(currentEval);
-            }
-          }
-
-          // Section 16 chip labeling rules:
-          let statusText = 'No hand detected';
-          if (trackingStatus === 'loading') {
-            statusText = 'Loading hand tracking';
-          } else if (trackingStatus === 'error') {
-            statusText = "Hand tracking couldn't load";
-          } else if (isSlowCamera) {
-            statusText = 'Slow camera';
-          } else if (multipleHands) {
-            statusText = 'Two hands detected';
-          } else if (detectedLandmarks && anatomicalHand) {
-            statusText = `${anatomicalHand} hand detected`;
-          }
-
-          setHandState({
-            detected: Boolean(detectedLandmarks) && !multipleHands,
-            multipleHands,
-            handedness: anatomicalHand,
-            statusText,
-            isPassing: currentEval?.status === 'correct',
-          });
-
-          // Draw skeleton on overlay canvas
-          const canvas = canvasRef.current;
-          if (canvas && video) {
-            if (
-              video.videoWidth > 0 &&
-              video.videoHeight > 0 &&
-              (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)
-            ) {
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-            }
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              drawOverlay(
-                ctx,
-                canvas.width,
-                canvas.height,
-                multipleHands ? null : detectedLandmarks,
-                currentEval,
-                isLessonComplete
-              );
-            }
-          }
-        };
-
-        rafIdRef.current = requestAnimationFrame(processFrame);
-      } catch (err) {
-        console.error('Camera access error:', err);
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          drawOverlay(
+            ctx,
+            canvas.width,
+            canvas.height,
+            multipleHands ? null : detectedLandmarks,
+            currentEval,
+            isLessonComplete
+          );
+        }
       }
-    }
+    };
 
-    start();
+    const unsubscribe = activeSource.subscribe(handleFrame);
 
     return () => {
-      active = false;
-      stop();
+      unsubscribe();
+      activeSource.stop();
     };
   }, [
     cameraEnabled,
+    isCameraDisconnected,
+    activeSource,
     targetSign,
     pack,
-    selectedCameraId,
-    landmarkSource,
-    isCameraDisconnected,
+    isLessonComplete,
     onEvaluationChange,
     onCameraDisconnected,
-    trackingStatus,
-    isSlowCamera,
-    isLessonComplete,
   ]);
 
   // Section 19: Responsive container dimensions
@@ -657,63 +444,81 @@ export function CameraPanel({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              display: 'block',
             }}
           />
           <canvas
             ref={canvasRef}
             style={{
               position: 'absolute',
-              inset: 0,
+              top: 0,
+              left: 0,
               width: '100%',
               height: '100%',
+              pointerEvents: 'none',
+              objectFit: 'cover',
             }}
           />
         </div>
       ) : (
+        /* Camera Off State */
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '14px',
+            justifyContent: 'center',
+            color: '#FFFFFF',
+            textAlign: 'center',
+            gap: '12px',
+            padding: '24px',
           }}
         >
-          <CameraOffIcon size={32} color={tokens.colors.overlayNeutral} />
-          <div
+          <CameraOffIcon size={48} color="currentColor" />
+          <p
             style={{
-              color: tokens.colors.overlayNeutral,
-              fontSize: tokens.typography.body.fontSize,
-              fontWeight: 500,
+              ...tokens.typography.titleMedium,
+              color: '#FFFFFF',
+              margin: 0,
             }}
           >
             Camera is off
-          </div>
-          {onToggleCamera && (
-            <button
-              type="button"
-              onClick={onToggleCamera}
-              className="btn-outlined"
-              style={{
-                height: tokens.shape.buttonHeight,
-                padding: '0 18px',
-                borderRadius: tokens.shape.radiusControl,
-                fontSize: tokens.typography.statusText.fontSize,
-                fontWeight: 600,
-              }}
-            >
-              Turn on camera
-            </button>
-          )}
+          </p>
+          <button
+            type="button"
+            onClick={onToggleCamera}
+            style={{
+              height: tokens.shape.buttonHeight,
+              padding: '0 20px',
+              backgroundColor: tokens.colors.surface,
+              color: tokens.colors.ink,
+              border: `1px solid ${tokens.colors.borderStrong}`,
+              borderRadius: tokens.shape.radiusControl,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginTop: '8px',
+            }}
+          >
+            Turn on camera
+          </button>
         </div>
       )}
 
-      {/* Learn Mode: ReferenceInset at bottom-left (hidden when lesson complete, Section 9) */}
-      {showReferenceInset &&
-        !isLessonComplete &&
-        referenceEntry &&
-        referenceEntry.canonicalLandmarks && (
-          <ReferenceInset landmarks={referenceEntry.canonicalLandmarks} />
-        )}
+      {/* Reference Inset Card */}
+      {showReferenceInset && referenceEntry?.canonicalLandmarks && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '16px',
+            zIndex: 10,
+          }}
+        >
+          <ReferenceInset
+            landmarks={referenceEntry.canonicalLandmarks}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -724,108 +529,141 @@ function drawOverlay(
   height: number,
   landmarks: readonly Vec3[] | null,
   evaluation: EvaluationResult | null,
-  isLessonComplete: boolean = false
-) {
+  isLessonComplete = false
+): void {
   ctx.clearRect(0, 0, width, height);
-  if (!landmarks || landmarks.length < 21) return;
+  if (!landmarks || landmarks.length !== 21) return;
 
-  const isEvaluable =
-    isLessonComplete ||
-    (evaluation !== null && evaluation.status !== 'unable_to_evaluate');
+  const isPassing = isLessonComplete || evaluation?.status === 'correct';
 
-  const isForcedColors =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(forced-colors: active)').matches;
+  const defaultStroke = isPassing
+    ? tokens.colors.overlayPassing
+    : tokens.colors.overlayNeutral;
 
-  const passingColor = isForcedColors ? 'Highlight' : tokens.colors.overlayPassing;
-  const attentionColor = isForcedColors ? 'CanvasText' : tokens.colors.overlayNeedsAttention;
-  const neutralColor = isForcedColors ? 'GrayText' : tokens.colors.overlayNeutral;
+  const defaultDot = isPassing
+    ? tokens.colors.overlayPassing
+    : '#FFFFFF';
 
-  // 1. Palm bridge
+  // 1. Draw Bones
+  for (const [finger, bones] of Object.entries(FINGER_BONES)) {
+    const fingerEval = evaluation?.fingers[finger as FingerName];
+    const fingerFailed = !isPassing && fingerEval && !fingerEval.passed;
+
+    const strokeColor = fingerFailed
+      ? tokens.colors.overlayNeedsAttention
+      : defaultStroke;
+
+    const isDashed = Boolean(fingerFailed);
+
+    ctx.save();
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = fingerFailed ? 3 : 2;
+    if (isDashed) {
+      ctx.setLineDash([6, 4]);
+    } else {
+      ctx.setLineDash([]);
+    }
+
+    for (const [startIdx, endIdx] of bones) {
+      const p1 = landmarks[startIdx];
+      const p2 = landmarks[endIdx];
+      if (!p1 || !p2) continue;
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x * width, p1.y * height);
+      ctx.lineTo(p2.x * width, p2.y * height);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // 2. Draw Palm Bridges
   ctx.save();
-  ctx.strokeStyle = isEvaluable ? passingColor : neutralColor;
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = defaultStroke;
+  ctx.lineWidth = 2;
   ctx.setLineDash([]);
-  for (const [a, b] of PALM_BRIDGES) {
+  for (const [startIdx, endIdx] of PALM_BRIDGES) {
+    const p1 = landmarks[startIdx];
+    const p2 = landmarks[endIdx];
+    if (!p1 || !p2) continue;
+
     ctx.beginPath();
-    ctx.moveTo(landmarks[a].x * width, landmarks[a].y * height);
-    ctx.lineTo(landmarks[b].x * width, landmarks[b].y * height);
+    ctx.moveTo(p1.x * width, p1.y * height);
+    ctx.lineTo(p2.x * width, p2.y * height);
     ctx.stroke();
   }
   ctx.restore();
 
-  // 2. Fingers
-  const fingers: FingerName[] = ['thumb', 'index', 'middle', 'ring', 'pinky'];
-  for (const finger of fingers) {
-    const fingerRes = isEvaluable ? evaluation?.fingers[finger] : null;
-    const isPassing = isLessonComplete
-      ? true
-      : isEvaluable
-      ? Boolean(fingerRes?.passed)
-      : false;
+  // 3. Draw Landmark Dots
+  for (let i = 0; i < landmarks.length; i++) {
+    const p = landmarks[i];
+    if (!p) continue;
 
-    let strokeColor: string = neutralColor;
-    let dashed = false;
+    const isWrist = i === 0;
+    const isTip = Object.values(FINGERTIP_INDICES).includes(i);
+    const radius = isWrist ? 5 : isTip ? 4 : 3;
 
-    if (isLessonComplete) {
-      strokeColor = passingColor;
-      dashed = false;
-    } else if (isEvaluable) {
-      if (isPassing) {
-        strokeColor = passingColor;
-        dashed = false;
-      } else {
-        strokeColor = attentionColor;
-        dashed = true;
+    let dotColor: string = defaultDot;
+    let strokeColor: string = defaultStroke;
+
+    for (const [finger, tipIdx] of Object.entries(FINGERTIP_INDICES)) {
+      if (i === tipIdx) {
+        const fingerEval = evaluation?.fingers[finger as FingerName];
+        if (!isPassing && fingerEval && !fingerEval.passed) {
+          dotColor = tokens.colors.overlayNeedsAttention;
+          strokeColor = tokens.colors.overlayNeedsAttention;
+        }
       }
     }
 
     ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x * width, p.y * height, radius, 0, Math.PI * 2);
+    ctx.fillStyle = dotColor;
+    ctx.fill();
+    ctx.lineWidth = 1.5;
     ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.setLineDash(dashed ? [6, 6] : []);
-
-    for (const [a, b] of FINGER_BONES[finger]) {
-      ctx.beginPath();
-      ctx.moveTo(landmarks[a].x * width, landmarks[a].y * height);
-      ctx.lineTo(landmarks[b].x * width, landmarks[b].y * height);
-      ctx.stroke();
-    }
+    ctx.stroke();
     ctx.restore();
-
-    // If needing attention, draw fingertip text label
-    if (isEvaluable && !isPassing && !isLessonComplete) {
-      const tipIdx = FINGERTIP_INDICES[finger];
-      const tipPt = landmarks[tipIdx];
-      const tipX = tipPt.x * width;
-      const tipY = tipPt.y * height;
-
-      ctx.save();
-      ctx.translate(tipX, tipY);
-      ctx.scale(-1, 1); // Counter-flip for mirrored video
-
-      ctx.font = '600 12px Inter, system-ui, sans-serif';
-      const labelText = FINGER_LABELS[finger];
-      const textWidth = ctx.measureText(labelText).width;
-
-      ctx.fillStyle = 'rgba(24, 27, 30, 0.85)';
-      ctx.beginPath();
-      ctx.roundRect(8, -12, textWidth + 12, 22, 6);
-      ctx.fill();
-
-      ctx.fillStyle = attentionColor;
-      ctx.fillText(labelText, 14, 3);
-      ctx.restore();
-    }
   }
 
-  // 3. Joint dots (3px white circles, system color in forced-colors mode)
-  for (let idx = 0; idx < 21; idx++) {
-    const pt = landmarks[idx];
-    ctx.beginPath();
-    ctx.arc(pt.x * width, pt.y * height, 3, 0, Math.PI * 2);
-    ctx.fillStyle = isForcedColors ? 'ButtonText' : '#FFFFFF';
-    ctx.fill();
+  // 4. Draw Attention Callout on Failing Fingertip
+  if (!isPassing && evaluation?.topIssue?.finger) {
+    const failingFinger = evaluation.topIssue.finger;
+    const tipIdx = FINGERTIP_INDICES[failingFinger];
+    const tipPoint = landmarks[tipIdx];
+
+    if (tipPoint) {
+      const cx = tipPoint.x * width;
+      const cy = tipPoint.y * height;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+      ctx.strokeStyle = tokens.colors.overlayNeedsAttention;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      const label = FINGER_LABELS[failingFinger] ?? failingFinger;
+      ctx.font = '600 12px Inter, sans-serif';
+      const textMetrics = ctx.measureText(label);
+      const padding = 6;
+      const bubbleW = textMetrics.width + padding * 2;
+      const bubbleH = 22;
+      const bx = cx - bubbleW / 2;
+      const by = cy - 24;
+
+      ctx.fillStyle = 'rgba(22, 24, 26, 0.85)';
+      ctx.beginPath();
+      ctx.roundRect(bx, by, bubbleW, bubbleH, 4);
+      ctx.fill();
+      ctx.strokeStyle = tokens.colors.overlayNeedsAttention;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(label, bx + padding, by + 15);
+      ctx.restore();
+    }
   }
 }

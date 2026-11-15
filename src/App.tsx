@@ -14,6 +14,7 @@ import { LearnScreen } from './ui/screens/Learn';
 import { CheckScreen } from './ui/screens/Check';
 import { DebouncedSpeechCoach } from './ui/speechCoach';
 import { handleHoldCompletion } from './ui/practiceHandler';
+import { handTrackingService } from './services/handTracking';
 import type { EvaluationResult, FingerName, LandmarkSource } from './engine';
 import type { LessonSignStatus } from './ui/components/LessonPath';
 import type { AppMode } from './ui/components/ModeTabs';
@@ -84,6 +85,7 @@ export default function App() {
 
   // Step 3: Dev Mock Mode state
   const [mockLandmarkSource, setMockLandmarkSource] = useState<LandmarkSource | null>(null);
+  const activeLandmarkSource = mockLandmarkSource ?? handTrackingService;
   const [isMockActive, setIsMockActive] = useState<boolean>(false);
 
   const updateCameras = useCallback(async () => {
@@ -575,7 +577,7 @@ export default function App() {
             isMobile={isMobile}
             isTablet={isTablet}
             selectedCameraId={selectedCameraId}
-            landmarkSource={mockLandmarkSource}
+            landmarkSource={activeLandmarkSource}
             isCameraDisconnected={isCameraDisconnected}
             onChooseCamera={handleChooseCamera}
             cameraChangedNotice={cameraChangedNotice}
@@ -609,7 +611,7 @@ export default function App() {
             isMobile={isMobile}
             isTablet={isTablet}
             selectedCameraId={selectedCameraId}
-            landmarkSource={mockLandmarkSource}
+            landmarkSource={activeLandmarkSource}
             isCameraDisconnected={isCameraDisconnected}
             onChooseCamera={handleChooseCamera}
             cameraChangedNotice={cameraChangedNotice}
