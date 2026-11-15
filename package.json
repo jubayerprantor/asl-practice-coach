@@ -1,6 +1,8 @@
 {
   "name": "asl-practice-coach",
   "description": "Private, on-device ASL fingerspelling practice coach with real-time feedback",
+  "author": "Jubayer Al Mahmud",
+  "description": "Private, on-device ASL fingerspelling practice coach with real-time feedback",
   "author": "Jubayer Prantor",
   "private": true,
   "version": "0.1.0",
