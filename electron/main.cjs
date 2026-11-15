@@ -98,6 +98,10 @@ async function createWindow() {
   // Hide default menu bar
   Menu.setApplicationMenu(null);
 
+  const appIconPath = fs.existsSync(path.join(getDistDir(), 'icon-512.png'))
+    ? path.join(getDistDir(), 'icon-512.png')
+    : path.join(__dirname, '..', 'public', 'icon-512.png');
+
   mainWindow = new BrowserWindow({
     width,
     height,
@@ -110,6 +114,7 @@ async function createWindow() {
     autoHideMenuBar: true,
     show: false,
     backgroundColor: '#FAF9F5',
+    icon: fs.existsSync(appIconPath) ? appIconPath : undefined,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

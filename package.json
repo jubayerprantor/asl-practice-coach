@@ -40,6 +40,7 @@
     "publish": null,
     "appId": "com.aslpracticecoach.app",
     "productName": "ASL Practice Coach",
+    "icon": "public/icon-512.png",
     "asar": false,
     "directories": {
       "output": "release"
@@ -50,6 +51,7 @@
       "package.json"
     ],
     "win": {
+      "icon": "public/icon-512.png",
       "target": [
         {
           "target": "nsis",
