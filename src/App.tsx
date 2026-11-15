@@ -17,6 +17,7 @@ import { logPracticeAttempt } from './storage/db';
 import type { EvaluationResult, FingerName } from './engine';
 import type { LessonSignStatus } from './ui/components/LessonPath';
 import type { AppMode } from './ui/components/ModeTabs';
+import type { CameraDeviceInfo } from './ui/components/CameraMenu';
 
 export default function App() {
   const availablePacks = useMemo(() => listAvailableLanguagePacks(), []);
@@ -66,6 +67,83 @@ export default function App() {
   const [voiceEnabled, setVoiceEnabled] = useState<boolean>(false);
   const [cameraEnabled, setCameraEnabled] = useState<boolean>(true);
   const [showReference, setShowReference] = useState<boolean>(false);
+
+  // Section 25: Camera picker & device state
+  const [cameras, setCameras] = useState<CameraDeviceInfo[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem('asl_selected_camera_id');
+  });
+  const [cameraChangedNotice, setCameraChangedNotice] = useState<string | null>(null);
+  const [isCameraDisconnected, setIsCameraDisconnected] = useState<boolean>(false);
+  const [cameraMenuOpen, setCameraMenuOpen] = useState<boolean>(false);
+
+  const updateCameras = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+      const cameraList: CameraDeviceInfo[] = videoDevices.map((d, idx) => ({
+        deviceId: d.deviceId,
+        label: d.label || `Camera ${idx + 1}`,
+      }));
+      setCameras(cameraList);
+
+      const storedId = window.localStorage.getItem('asl_selected_camera_id');
+      if (cameraList.length > 0) {
+        if (storedId) {
+          const found = cameraList.find((c) => c.deviceId === storedId);
+          if (found) {
+            setSelectedCameraId(storedId);
+          } else {
+            // It is no longer plugged in: fall back to default (Section 25)
+            const defaultCam = cameraList[0];
+            setSelectedCameraId(defaultCam.deviceId);
+            window.localStorage.setItem('asl_selected_camera_id', defaultCam.deviceId);
+            setCameraChangedNotice(`Switched to ${defaultCam.label || 'Camera 1'}.`);
+          }
+        } else {
+          setSelectedCameraId(cameraList[0].deviceId);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to enumerate media devices:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    updateCameras();
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', updateCameras);
+      return () => {
+        navigator.mediaDevices.removeEventListener('devicechange', updateCameras);
+      };
+    }
+  }, [updateCameras]);
+
+  const handleSelectCamera = useCallback((deviceId: string) => {
+    setSelectedCameraId(deviceId);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('asl_selected_camera_id', deviceId);
+    }
+    setCameraEnabled(true);
+    setIsCameraDisconnected(false);
+    setCameraChangedNotice(null);
+  }, []);
+
+  const handleCameraDisconnected = useCallback(() => {
+    setIsCameraDisconnected(true);
+    setEvaluation(null);
+  }, []);
+
+  const handleChooseCamera = useCallback(() => {
+    updateCameras();
+    if (cameras.length > 1) {
+      setCameraMenuOpen(true);
+    } else if (cameras.length === 1) {
+      handleSelectCamera(cameras[0].deviceId);
+    }
+  }, [cameras, updateCameras, handleSelectCamera]);
 
   // Evaluation state
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
@@ -287,7 +365,7 @@ export default function App() {
     fingerMistakesRef.current = {};
   }, []);
 
-  // Keyboard shortcuts (Rule 6, Section 14)
+  // Keyboard shortcuts (Section 24: Ctrl+1 Check, Ctrl+2 Learn, Ctrl+3 Progress, Ctrl+Shift+V Voice, Ctrl+Shift+K Camera)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -307,23 +385,28 @@ export default function App() {
         return;
       }
 
-      if (!e.altKey) return;
+      const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+      if (!isCtrlOrMeta) return;
 
-      if (e.key === '1') {
-        e.preventDefault();
-        setMode('learn');
-      } else if (e.key === '2') {
-        e.preventDefault();
-        setMode('check');
-      } else if (e.key === '3') {
-        e.preventDefault();
-        setMode('progress');
-      } else if (e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        setCameraEnabled((prev) => !prev);
-      } else if (e.key.toLowerCase() === 'v') {
-        e.preventDefault();
-        setVoiceEnabled((prev) => !prev);
+      if (!e.shiftKey) {
+        if (e.key === '1') {
+          e.preventDefault();
+          setMode('check');
+        } else if (e.key === '2') {
+          e.preventDefault();
+          setMode('learn');
+        } else if (e.key === '3') {
+          e.preventDefault();
+          setMode('progress');
+        }
+      } else {
+        if (e.key === 'V' || e.key === 'v') {
+          e.preventDefault();
+          setVoiceEnabled((prev) => !prev);
+        } else if (e.key === 'K' || e.key === 'k') {
+          e.preventDefault();
+          setCameraEnabled((prev) => !prev);
+        }
       }
     };
 
@@ -418,6 +501,11 @@ export default function App() {
         onToggleVoice={() => setVoiceEnabled((v) => !v)}
         cameraEnabled={cameraEnabled}
         onToggleCamera={() => setCameraEnabled((c) => !c)}
+        cameras={cameras}
+        selectedCameraId={selectedCameraId}
+        onSelectCamera={handleSelectCamera}
+        cameraMenuOpen={cameraMenuOpen}
+        onCameraMenuOpenChange={setCameraMenuOpen}
         onWordmarkClick={() => setMode('home')}
         isMobile={isMobile}
         isTablet={isTablet}
@@ -443,6 +531,9 @@ export default function App() {
             isBlocked={isCameraBlocked}
             onStart={handleStartSetup}
             onRetryPermission={() => setIsCameraBlocked(false)}
+            cameras={cameras}
+            selectedCameraId={selectedCameraId}
+            onSelectCamera={handleSelectCamera}
             isTouch={isTouch}
           />
         ) : isCameraBlocked ? (
@@ -450,6 +541,9 @@ export default function App() {
             isBlocked={true}
             onStart={handleStartSetup}
             onRetryPermission={() => setIsCameraBlocked(false)}
+            cameras={cameras}
+            selectedCameraId={selectedCameraId}
+            onSelectCamera={handleSelectCamera}
             isTouch={isTouch}
           />
         ) : mode === 'home' ? (
@@ -492,6 +586,11 @@ export default function App() {
             onToggleReference={() => setShowReference((r) => !r)}
             isMobile={isMobile}
             isTablet={isTablet}
+            selectedCameraId={selectedCameraId}
+            isCameraDisconnected={isCameraDisconnected}
+            onChooseCamera={handleChooseCamera}
+            cameraChangedNotice={cameraChangedNotice}
+            onCameraDisconnected={handleCameraDisconnected}
           />
         ) : (
           /* Learn Screen */
@@ -520,6 +619,11 @@ export default function App() {
             onPracticeAgain={handlePracticeAgain}
             isMobile={isMobile}
             isTablet={isTablet}
+            selectedCameraId={selectedCameraId}
+            isCameraDisconnected={isCameraDisconnected}
+            onChooseCamera={handleChooseCamera}
+            cameraChangedNotice={cameraChangedNotice}
+            onCameraDisconnected={handleCameraDisconnected}
           />
         )}
       </main>

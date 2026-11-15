@@ -8,10 +8,14 @@ interface ModeTabsProps {
 }
 
 export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
-  const tabs: ReadonlyArray<{ id: 'check' | 'learn' | 'progress'; label: string }> = [
-    { id: 'check', label: 'Check' },
-    { id: 'learn', label: 'Learn' },
-    { id: 'progress', label: 'Progress' },
+  const tabs: ReadonlyArray<{
+    id: 'check' | 'learn' | 'progress';
+    label: string;
+    shortcut: string;
+  }> = [
+    { id: 'check', label: 'Check', shortcut: 'Ctrl+1' },
+    { id: 'learn', label: 'Learn', shortcut: 'Ctrl+2' },
+    { id: 'progress', label: 'Progress', shortcut: 'Ctrl+3' },
   ];
 
   return (
@@ -29,7 +33,7 @@ export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
           boxSizing: 'border-box',
         }}
       >
-        {tabs.map(({ id, label }) => {
+        {tabs.map(({ id, label, shortcut }) => {
           const isActive = mode === id;
 
           return (
@@ -39,6 +43,7 @@ export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
               role="tab"
               aria-selected={isActive}
               aria-current={isActive ? 'page' : undefined}
+              title={`${label} (${shortcut})`}
               onClick={() => onModeChange(id)}
               className="tab-btn"
               style={{

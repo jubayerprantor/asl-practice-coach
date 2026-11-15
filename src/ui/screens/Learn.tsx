@@ -38,6 +38,11 @@ interface LearnScreenProps {
   onPracticeAgain: () => void;
   isMobile: boolean;
   isTablet: boolean;
+  selectedCameraId?: string | null;
+  isCameraDisconnected?: boolean;
+  onChooseCamera?: () => void;
+  cameraChangedNotice?: string | null;
+  onCameraDisconnected?: () => void;
 }
 
 export function LearnScreen({
@@ -65,6 +70,11 @@ export function LearnScreen({
   onPracticeAgain,
   isMobile,
   isTablet,
+  selectedCameraId = null,
+  isCameraDisconnected = false,
+  onChooseCamera,
+  cameraChangedNotice = null,
+  onCameraDisconnected,
 }: LearnScreenProps) {
   const [mobileSheetOpen, setMobileSheetOpen] = useState<boolean>(false);
 
@@ -126,7 +136,10 @@ export function LearnScreen({
             isLessonComplete={isLessonComplete}
             isMobile={isMobile}
             isTablet={isTablet}
+            selectedCameraId={selectedCameraId}
+            isCameraDisconnected={isCameraDisconnected}
             onEvaluationChange={onEvaluationChange}
+            onCameraDisconnected={onCameraDisconnected}
             onToggleCamera={onToggleCamera}
           />
         </div>
@@ -199,7 +212,19 @@ export function LearnScreen({
                   completedHolds={completedHolds}
                   requiredHolds={requiredHolds}
                 />
-                {isUnableToEvaluate || !cameraEnabled ? (
+                {isCameraDisconnected ? (
+                  <StatusCard
+                    reason="camera_disconnected"
+                    onAction={onChooseCamera}
+                    isTouch={isTouch}
+                  />
+                ) : cameraChangedNotice ? (
+                  <StatusCard
+                    reason="camera_changed"
+                    customMessage={cameraChangedNotice}
+                    isTouch={isTouch}
+                  />
+                ) : isUnableToEvaluate || !cameraEnabled ? (
                   <StatusCard
                     reason={!cameraEnabled ? 'no_hand_detected' : evaluation?.unableReason ?? 'no_hand_detected'}
                     isTouch={isTouch}
@@ -217,12 +242,12 @@ export function LearnScreen({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <FingerList
                   evaluation={evaluation}
-                  cameraEnabled={cameraEnabled}
+                  cameraEnabled={cameraEnabled && !isCameraDisconnected}
                   isMobile={false}
                 />
                 <HoldMeter
                   hold={evaluation?.hold ?? null}
-                  cameraEnabled={cameraEnabled}
+                  cameraEnabled={cameraEnabled && !isCameraDisconnected}
                 />
               </div>
             </div>
@@ -241,7 +266,19 @@ export function LearnScreen({
                 requiredHolds={requiredHolds}
               />
 
-              {isUnableToEvaluate || !cameraEnabled ? (
+              {isCameraDisconnected ? (
+                <StatusCard
+                  reason="camera_disconnected"
+                  onAction={onChooseCamera}
+                  isTouch={isTouch}
+                />
+              ) : cameraChangedNotice ? (
+                <StatusCard
+                  reason="camera_changed"
+                  customMessage={cameraChangedNotice}
+                  isTouch={isTouch}
+                />
+              ) : isUnableToEvaluate || !cameraEnabled ? (
                 <StatusCard
                   reason={!cameraEnabled ? 'no_hand_detected' : evaluation?.unableReason ?? 'no_hand_detected'}
                   isTouch={isTouch}
@@ -256,13 +293,13 @@ export function LearnScreen({
 
               <FingerList
                 evaluation={evaluation}
-                cameraEnabled={cameraEnabled}
+                cameraEnabled={cameraEnabled && !isCameraDisconnected}
                 isMobile={isMobile}
               />
 
               <HoldMeter
                 hold={evaluation?.hold ?? null}
-                cameraEnabled={cameraEnabled}
+                cameraEnabled={cameraEnabled && !isCameraDisconnected}
               />
             </>
           )}

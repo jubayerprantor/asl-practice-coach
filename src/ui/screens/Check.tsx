@@ -23,6 +23,11 @@ interface CheckScreenProps {
   onToggleReference: () => void;
   isMobile: boolean;
   isTablet: boolean;
+  selectedCameraId?: string | null;
+  isCameraDisconnected?: boolean;
+  onChooseCamera?: () => void;
+  cameraChangedNotice?: string | null;
+  onCameraDisconnected?: () => void;
 }
 
 export function CheckScreen({
@@ -38,6 +43,11 @@ export function CheckScreen({
   onToggleReference,
   isMobile,
   isTablet,
+  selectedCameraId = null,
+  isCameraDisconnected = false,
+  onChooseCamera,
+  cameraChangedNotice = null,
+  onCameraDisconnected,
 }: CheckScreenProps) {
   const [mobileSheetOpen, setMobileSheetOpen] = useState<boolean>(false);
 
@@ -99,7 +109,10 @@ export function CheckScreen({
             isLessonComplete={false}
             isMobile={isMobile}
             isTablet={isTablet}
+            selectedCameraId={selectedCameraId}
+            isCameraDisconnected={isCameraDisconnected}
             onEvaluationChange={onEvaluationChange}
+            onCameraDisconnected={onCameraDisconnected}
             onToggleCamera={onToggleCamera}
           />
         </div>
@@ -137,7 +150,19 @@ export function CheckScreen({
                   onToggleReference={handleReferenceClick}
                   isTouch={isTouch}
                 />
-                {isUnableToEvaluate || !cameraEnabled ? (
+                {isCameraDisconnected ? (
+                  <StatusCard
+                    reason="camera_disconnected"
+                    onAction={onChooseCamera}
+                    isTouch={isTouch}
+                  />
+                ) : cameraChangedNotice ? (
+                  <StatusCard
+                    reason="camera_changed"
+                    customMessage={cameraChangedNotice}
+                    isTouch={isTouch}
+                  />
+                ) : isUnableToEvaluate || !cameraEnabled ? (
                   <StatusCard
                     reason={!cameraEnabled ? 'no_hand_detected' : evaluation?.unableReason ?? 'no_hand_detected'}
                     isTouch={isTouch}
@@ -154,12 +179,12 @@ export function CheckScreen({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <FingerList
                   evaluation={evaluation}
-                  cameraEnabled={cameraEnabled}
+                  cameraEnabled={cameraEnabled && !isCameraDisconnected}
                   isMobile={false}
                 />
                 <HoldMeter
                   hold={evaluation?.hold ?? null}
-                  cameraEnabled={cameraEnabled}
+                  cameraEnabled={cameraEnabled && !isCameraDisconnected}
                 />
               </div>
             </div>
@@ -173,7 +198,19 @@ export function CheckScreen({
                 isTouch={isTouch}
               />
 
-              {isUnableToEvaluate || !cameraEnabled ? (
+              {isCameraDisconnected ? (
+                <StatusCard
+                  reason="camera_disconnected"
+                  onAction={onChooseCamera}
+                  isTouch={isTouch}
+                />
+              ) : cameraChangedNotice ? (
+                <StatusCard
+                  reason="camera_changed"
+                  customMessage={cameraChangedNotice}
+                  isTouch={isTouch}
+                />
+              ) : isUnableToEvaluate || !cameraEnabled ? (
                 <StatusCard
                   reason={!cameraEnabled ? 'no_hand_detected' : evaluation?.unableReason ?? 'no_hand_detected'}
                   isTouch={isTouch}
@@ -188,13 +225,13 @@ export function CheckScreen({
 
               <FingerList
                 evaluation={evaluation}
-                cameraEnabled={cameraEnabled}
+                cameraEnabled={cameraEnabled && !isCameraDisconnected}
                 isMobile={isMobile}
               />
 
               <HoldMeter
                 hold={evaluation?.hold ?? null}
-                cameraEnabled={cameraEnabled}
+                cameraEnabled={cameraEnabled && !isCameraDisconnected}
               />
             </>
           )}

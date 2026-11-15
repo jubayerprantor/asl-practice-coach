@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { tokens } from '../tokens';
 import { BoundingBoxIcon, HandIcon, SunIcon } from '../icons';
+import type { CameraDeviceInfo } from './CameraMenu';
 
 interface SetupCardProps {
   isBlocked?: boolean;
   onStart: () => void;
   onRetryPermission?: () => void;
+  cameras?: CameraDeviceInfo[];
+  selectedCameraId?: string | null;
+  onSelectCamera?: (id: string) => void;
   isTouch?: boolean;
 }
 
@@ -13,6 +17,9 @@ export function SetupCard({
   isBlocked = false,
   onStart,
   onRetryPermission,
+  cameras = [],
+  selectedCameraId = null,
+  onSelectCamera,
   isTouch = false,
 }: SetupCardProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -31,11 +38,9 @@ export function SetupCard({
     async function initCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            facingMode: 'user',
-          },
+          video: selectedCameraId
+            ? { deviceId: { exact: selectedCameraId }, width: { ideal: 640 }, height: { ideal: 480 } }
+            : { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
           audio: false,
         });
 
@@ -69,7 +74,7 @@ export function SetupCard({
         streamRef.current = null;
       }
     };
-  }, [isBlocked]);
+  }, [isBlocked, selectedCameraId]);
 
   if (isBlocked) {
     return (
@@ -107,7 +112,7 @@ export function SetupCard({
           }}
         >
           This app needs the camera to check your signing. Allow camera access in
-          your browser settings, then try again.
+          Windows Settings &gt; Privacy &amp; security &gt; Camera, then try again.
         </p>
         <button
           type="button"
@@ -181,6 +186,43 @@ export function SetupCard({
           </span>
         </div>
       </div>
+
+      {/* Camera Picker Select (Section 25: when multiple cameras are found) */}
+      {cameras.length > 1 && (
+        <label
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: tokens.colors.ink,
+          }}
+        >
+          <span>Camera</span>
+          <select
+            value={selectedCameraId ?? ''}
+            onChange={(e) => onSelectCamera?.(e.target.value)}
+            style={{
+              height: tokens.shape.buttonHeight,
+              padding: '0 12px',
+              borderRadius: tokens.shape.radiusControl,
+              border: `1px solid ${tokens.colors.borderStrong}`,
+              backgroundColor: tokens.colors.surface,
+              color: tokens.colors.ink,
+              fontSize: '14px',
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            {cameras.map((cam, idx) => (
+              <option key={cam.deviceId || idx} value={cam.deviceId}>
+                {cam.label || `Camera ${idx + 1}`}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {/* Small live preview (mirrored, 4:3, radius 14) with dashed outline */}
       <div

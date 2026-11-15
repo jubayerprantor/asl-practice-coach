@@ -25,8 +25,11 @@ interface CameraPanelProps {
   isLessonComplete?: boolean;
   isMobile?: boolean;
   isTablet?: boolean;
+  selectedCameraId?: string | null;
+  isCameraDisconnected?: boolean;
   onEvaluationChange?: (result: EvaluationResult) => void;
   onTrackingStatusChange?: (status: TrackingStatus) => void;
+  onCameraDisconnected?: () => void;
   onToggleCamera?: () => void;
 }
 
@@ -69,8 +72,11 @@ export function CameraPanel({
   isLessonComplete = false,
   isMobile = false,
   isTablet = false,
+  selectedCameraId = null,
+  isCameraDisconnected = false,
   onEvaluationChange,
   onTrackingStatusChange,
+  onCameraDisconnected,
   onToggleCamera,
 }: CameraPanelProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -182,13 +188,13 @@ export function CameraPanel({
       }
     }
 
-    if (!cameraEnabled) {
+    if (!cameraEnabled || isCameraDisconnected) {
       stop();
       setHandState({
         detected: false,
         multipleHands: false,
         handedness: null,
-        statusText: 'Camera is off',
+        statusText: isCameraDisconnected ? 'Camera disconnected' : 'Camera is off',
         isPassing: false,
       });
       return;
@@ -197,13 +203,27 @@ export function CameraPanel({
     async function start() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            facingMode: 'user',
-          },
+          video: selectedCameraId
+            ? {
+                deviceId: { exact: selectedCameraId },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              }
+            : {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user',
+              },
           audio: false,
         });
+
+        // Track disconnection listener (Section 25)
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.onended = () => {
+            onCameraDisconnected?.();
+          };
+        }
 
         if (!active) {
           stream.getTracks().forEach((t) => t.stop());
@@ -381,7 +401,10 @@ export function CameraPanel({
     cameraEnabled,
     targetSign,
     pack,
+    selectedCameraId,
+    isCameraDisconnected,
     onEvaluationChange,
+    onCameraDisconnected,
     trackingStatus,
     isSlowCamera,
     isLessonComplete,
@@ -584,11 +607,17 @@ function drawOverlay(
     isLessonComplete ||
     (evaluation !== null && evaluation.status !== 'unable_to_evaluate');
 
+  const isForcedColors =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(forced-colors: active)').matches;
+
+  const passingColor = isForcedColors ? 'Highlight' : tokens.colors.overlayPassing;
+  const attentionColor = isForcedColors ? 'CanvasText' : tokens.colors.overlayNeedsAttention;
+  const neutralColor = isForcedColors ? 'GrayText' : tokens.colors.overlayNeutral;
+
   // 1. Palm bridge
   ctx.save();
-  ctx.strokeStyle = isEvaluable
-    ? tokens.colors.overlayPassing
-    : tokens.colors.overlayNeutral;
+  ctx.strokeStyle = isEvaluable ? passingColor : neutralColor;
   ctx.lineWidth = 2.5;
   ctx.setLineDash([]);
   for (const [a, b] of PALM_BRIDGES) {
@@ -609,18 +638,18 @@ function drawOverlay(
       ? Boolean(fingerRes?.passed)
       : false;
 
-    let strokeColor: string = tokens.colors.overlayNeutral;
+    let strokeColor: string = neutralColor;
     let dashed = false;
 
     if (isLessonComplete) {
-      strokeColor = tokens.colors.overlayPassing;
+      strokeColor = passingColor;
       dashed = false;
     } else if (isEvaluable) {
       if (isPassing) {
-        strokeColor = tokens.colors.overlayPassing;
+        strokeColor = passingColor;
         dashed = false;
       } else {
-        strokeColor = tokens.colors.overlayNeedsAttention;
+        strokeColor = attentionColor;
         dashed = true;
       }
     }
@@ -659,18 +688,18 @@ function drawOverlay(
       ctx.roundRect(8, -12, textWidth + 12, 22, 6);
       ctx.fill();
 
-      ctx.fillStyle = tokens.colors.overlayNeedsAttention;
+      ctx.fillStyle = attentionColor;
       ctx.fillText(labelText, 14, 3);
       ctx.restore();
     }
   }
 
-  // 3. Joint dots (3px white circles)
+  // 3. Joint dots (3px white circles, system color in forced-colors mode)
   for (let idx = 0; idx < 21; idx++) {
     const pt = landmarks[idx];
     ctx.beginPath();
     ctx.arc(pt.x * width, pt.y * height, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = isForcedColors ? 'ButtonText' : '#FFFFFF';
     ctx.fill();
   }
 }

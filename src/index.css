@@ -1,4 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Local Inter font files (Section 24: Offline by design - zero network requests) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Inter-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/Inter-Bold.woff2') format('woff2');
+}
 
 :root {
   color-scheme: light;
@@ -152,4 +183,63 @@ button {
 .tab-btn[aria-selected="true"] {
   background-color: var(--color-ink);
   color: #FFFFFF;
+}
+
+/* Windows High-contrast mode (Section 24: keep every border, use system colors) */
+@media (forced-colors: active) {
+  :root {
+    --color-ground: Canvas;
+    --color-surface: Canvas;
+    --color-border: CanvasText;
+    --color-border-strong: CanvasText;
+    --color-row-divider: CanvasText;
+    --color-ink: CanvasText;
+    --color-muted-text: CanvasText;
+    --color-secondary-body: CanvasText;
+    --color-tab-track: Canvas;
+    --color-chip-neutral: Canvas;
+    --color-locked-outline: GrayText;
+    --color-overlay-passing: Highlight;
+    --color-overlay-needs-attention: CanvasText;
+    --color-overlay-neutral: GrayText;
+    --color-status-card-fill: Canvas;
+    --color-status-card-border: CanvasText;
+    --color-hint-card-fill: Canvas;
+    --color-hint-card-border: CanvasText;
+  }
+
+  .btn-outlined {
+    border: 1px solid ButtonText !important;
+    color: ButtonText !important;
+    background-color: Canvas !important;
+    forced-color-adjust: none;
+  }
+
+  .btn-outlined:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+  }
+
+  .btn-primary {
+    background-color: ButtonText !important;
+    color: Canvas !important;
+    border: 1px solid ButtonText !important;
+    forced-color-adjust: none;
+  }
+
+  .btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+  }
+
+  .tab-btn {
+    border: 1px solid transparent;
+  }
+
+  .tab-btn[aria-selected="true"] {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+    border: 1px solid Highlight !important;
+    forced-color-adjust: none;
+  }
 }

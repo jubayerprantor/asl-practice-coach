@@ -3,23 +3,41 @@ import { InfoCircleIcon } from '../icons';
 
 interface StatusCardProps {
   reason: string | null;
+  customMessage?: string;
   onRetry?: () => void;
+  actionText?: string;
+  onAction?: () => void;
   isTouch?: boolean;
 }
 
 interface StatusDetails {
   title: string;
   message: string;
-  showRetry?: boolean;
+  showButton?: boolean;
+  buttonLabel?: string;
 }
 
-function getStatusDetails(reason: string | null): StatusDetails {
+function getStatusDetails(reason: string | null, customMessage?: string): StatusDetails {
   switch (reason) {
     case 'tracking_failed':
+    case 'hand_tracking_missing':
       return {
-        title: "Hand tracking couldn't load",
-        message: 'Check your connection and try again.',
-        showRetry: true,
+        title: 'Hand tracking files are missing',
+        message: 'Reinstall the app.',
+        showButton: false,
+      };
+    case 'camera_changed':
+      return {
+        title: 'Your camera changed',
+        message: customMessage || 'Switched to the default camera.',
+        showButton: false,
+      };
+    case 'camera_disconnected':
+      return {
+        title: 'Camera disconnected',
+        message: 'Choose a camera.',
+        showButton: true,
+        buttonLabel: 'Choose a camera',
       };
     case 'two_hands_detected':
       return {
@@ -70,9 +88,19 @@ function getStatusDetails(reason: string | null): StatusDetails {
   }
 }
 
-export function StatusCard({ reason, onRetry, isTouch = false }: StatusCardProps) {
-  const { title, message, showRetry } = getStatusDetails(reason);
+export function StatusCard({
+  reason,
+  customMessage,
+  onRetry,
+  actionText,
+  onAction,
+  isTouch = false,
+}: StatusCardProps) {
+  const details = getStatusDetails(reason, customMessage);
   const btnHeight = isTouch ? tokens.shape.mobileTouchTarget : tokens.shape.buttonHeight;
+
+  const handleButtonClick = onAction || onRetry;
+  const buttonLabel = actionText || details.buttonLabel || 'Try again';
 
   return (
     <div
@@ -101,7 +129,7 @@ export function StatusCard({ reason, onRetry, isTouch = false }: StatusCardProps
             lineHeight: 1.3,
           }}
         >
-          {title}
+          {details.title}
         </div>
         <div
           style={{
@@ -109,12 +137,12 @@ export function StatusCard({ reason, onRetry, isTouch = false }: StatusCardProps
             color: tokens.colors.mutedText,
           }}
         >
-          {message}
+          {details.message}
         </div>
-        {showRetry && onRetry && (
+        {(details.showButton || onAction || (details.showButton && onRetry)) && handleButtonClick && (
           <button
             type="button"
-            onClick={onRetry}
+            onClick={handleButtonClick}
             className="btn-primary"
             style={{
               height: btnHeight,
@@ -126,7 +154,7 @@ export function StatusCard({ reason, onRetry, isTouch = false }: StatusCardProps
               marginTop: '6px',
             }}
           >
-            Try again
+            {buttonLabel}
           </button>
         )}
       </div>
